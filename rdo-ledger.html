@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Last Frontier — RDO Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2a1c10;
+    --paper:#ece0c3;
+    --paper-dark:#dccaa0;
+    --paper-edge:#c9b384;
+    --leather:#1b120c;
+    --leather-2:#2a1d12;
+    --leather-3:#352513;
+    --rust:#9c3b2e;
+    --rust-dark:#7c2c22;
+    --brass:#b8924a;
+    --brass-light:#d8b876;
+    --sage:#5c6e4f;
+    --sage-light:#7c9168;
+    --sage-dark:#3f4d36;
+    --shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top, #3a2917 0%, var(--leather) 55%, #100b07 100%);
+    color:var(--paper);
+    font-family:'Vollkorn',serif;
+    min-height:100vh;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 14px;}
+
+  /* ---------- Header ---------- */
+  header.banner{
+    position:relative;
+    padding:30px 18px 22px;
+    text-align:center;
+    background:linear-gradient(180deg, var(--leather-2), var(--leather-3));
+    border-bottom:3px solid var(--brass);
+    box-shadow: var(--shadow);
+  }
+  header.banner h1{
+    font-family:'Rye',cursive;
+    font-size:clamp(26px,7vw,38px);
+    letter-spacing:1px;
+    color:var(--brass-light);
+    margin:0 0 8px;
+    text-shadow: 2px 2px 0 #000, 0 0 18px rgba(184,146,74,0.25);
+  }
+  header.banner p{
+    margin:0;
+    font-style:italic;
+    color:var(--paper-dark);
+    font-size:14.5px;
+    max-width:480px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'Special Elite',monospace;
+    font-size:11px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+
+  /* ---------- Countdown watches ---------- */
+  .watches{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    padding:16px 14px 4px;
+  }
+  @media (max-width:420px){ .watches{grid-template-columns:1fr;} }
+  .watch{
+    background:radial-gradient(circle at 30% 25%, #f4ead0, var(--paper) 70%);
+    border:3px solid var(--brass);
+    border-radius:14px;
+    padding:14px 12px;
+    text-align:center;
+    color:var(--ink);
+    box-shadow: var(--shadow), inset 0 0 0 1px rgba(0,0,0,0.4);
+  }
+  .watch .eyebrow{color:var(--rust-dark);}
+  .watch .digits{
+    font-family:'Special Elite',monospace;
+    font-size:clamp(22px,6.5vw,28px);
+    letter-spacing:1px;
+    margin:6px 0 4px;
+  }
+  .watch .local{
+    font-size:11.5px;
+    color:#5a4a30;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    display:flex;
+    margin:18px 14px 0;
+    border-bottom:3px solid var(--brass);
+  }
+  .tab-btn{
+    flex:1;
+    font-family:'Rye',cursive;
+    font-size:15px;
+    letter-spacing:1px;
+    padding:11px 6px;
+    background:var(--leather-3);
+    color:var(--paper-dark);
+    border:none;
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+    cursor:pointer;
+    opacity:0.65;
+  }
+  .tab-btn + .tab-btn{margin-left:6px;}
+  .tab-btn.active{
+    background:var(--paper);
+    color:var(--rust);
+    opacity:1;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
+  }
+  .panel{display:none; padding:16px 14px 8px;}
+  .panel.active{display:block;}
+
+  /* ---------- Summary strip ---------- */
+  .summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .summary .stat{
+    background:var(--leather-2);
+    border:1px solid var(--brass);
+    border-radius:10px;
+    text-align:center;
+    padding:10px 4px;
+  }
+  .summary .stat .num{
+    font-family:'Special Elite',monospace;
+    font-size:19px;
+    color:var(--brass-light);
+    display:block;
+  }
+  .summary .stat .lbl{
+    font-size:10.5px;
+    color:var(--paper-dark);
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+
+  /* ---------- Category & sets ---------- */
+  h2.category{
+    font-family:'Rye',cursive;
+    font-size:18px;
+    color:var(--brass-light);
+    border-bottom:1px solid var(--brass);
+    padding-bottom:6px;
+    margin:26px 0 10px;
+  }
+  h2.category:first-of-type{margin-top:4px;}
+
+  .set-card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:10px;
+    margin-bottom:10px;
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+  .set-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 14px;
+    cursor:pointer;
+    gap:10px;
+  }
+  .set-head .titles{flex:1;min-width:0;}
+  .set-head h3{
+    margin:0 0 2px;
+    font-size:15.5px;
+    font-weight:700;
+  }
+  .set-head .meta{
+    font-family:'Special Elite',monospace;
+    font-size:11.5px;
+    color:var(--brass-light);
+  }
+  .set-head .chev{
+    font-size:18px;
+    color:var(--rust-dark);
+    transition:transform .2s;
+    flex-shrink:0;
+  }
+  .set-card.open .chev{transform:rotate(180deg);}
+
+  .progress-track{
+    height:6px;
+    background:var(--paper-dark);
+    border-radius:4px;
+    overflow:hidden;
+    margin-top:6px;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--sage), var(--sage-light));
+  }
+
+  .set-body{
+    display:none;
+    padding:0 14px 14px;
+    border-top:1px dashed var(--paper-edge);
+  }
+  .set-card.open .set-body{display:block;}
+
+  .tools-line{
+    font-size:12px;
+    color:var(--rust-dark);
+    margin:10px 0 8px;
+    font-style:italic;
+  }
+
+  .item-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
+    gap:7px;
+    margin-bottom:12px;
+  }
+  .item-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    background:#f5ecd6;
+    border:1px solid var(--paper-edge);
+    border-radius:7px;
+    padding:6px 6px 6px 9px;
+    font-size:12px;
+  }
+  .item-row.bottleneck{
+    background:#f6e2d8;
+    border-color:var(--rust);
+  }
+  .item-row.sufficient{
+    background:#e3ecd9;
+    border-color:var(--sage-light);
+    opacity:0.75;
+  }
+  .item-row.sufficient .item-name{
+    text-decoration:line-through;
+    text-decoration-color:var(--sage-dark);
+  }
+  .item-row.full{
+    background:var(--sage);
+    color:#f3f3e9;
+    border-color:var(--sage-dark);
+  }
+  .item-row.full .item-name{text-decoration:none;}
+  .item-row .item-name{flex:1;min-width:0;line-height:1.25;}
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    flex-shrink:0;
+  }
+  .step-btn{
+    width:24px;height:24px;
+    border-radius:50%;
+    border:1px solid var(--rust-dark);
+    background:var(--rust);
+    color:#fff;
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+    padding:0;
+  }
+  .step-btn:disabled{opacity:0.3; cursor:not-allowed;}
+  .step-count{
+    font-family:'Special Elite',monospace;
+    font-size:13px;
+    min-width:16px;
+    text-align:center;
+  }
+
+  .set-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Special Elite',monospace;
+    font-size:12px;
+    letter-spacing:.5px;
+    padding:9px 14px;
+    border-radius:7px;
+    border:1px solid var(--rust-dark);
+    background:var(--rust);
+    color:#fdf6e8;
+    cursor:pointer;
+  }
+  .btn:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  .btn.ghost{
+    background:transparent;
+    color:var(--rust);
+  }
+  .btn.map-link{
+    background:var(--brass);
+    border-color:#8a6a2e;
+    color:var(--ink);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .map-banner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:var(--leather-2);
+    border:1px solid var(--brass);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:16px;
+  }
+  .map-banner p{
+    margin:0;
+    font-size:12px;
+    color:var(--paper-dark);
+    line-height:1.5;
+  }
+  .map-banner a.btn{flex-shrink:0;}
+
+  .filter-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .filter-btn{
+    flex:1;
+    font-family:'Special Elite',monospace;
+    font-size:11.5px;
+    letter-spacing:.3px;
+    padding:9px 6px;
+    border-radius:8px;
+    border:1px solid var(--brass);
+    background:var(--leather-2);
+    color:var(--paper-dark);
+    cursor:pointer;
+  }
+  .filter-btn.active{
+    background:var(--brass);
+    color:var(--ink);
+    font-weight:bold;
+  }
+
+  .need-line{
+    font-size:12px;
+    color:var(--rust-dark);
+    margin:10px 0 8px;
+    font-weight:600;
+  }
+  .maxed-line{
+    font-size:12.5px;
+    color:var(--sage-light);
+    margin:10px 0;
+    font-style:italic;
+  }
+
+  .stamp{
+    position:absolute;
+    top:42%; left:50%;
+    transform:translate(-50%,-50%) rotate(-18deg) scale(0.4);
+    font-family:'Rye',cursive;
+    font-size:30px;
+    color:var(--rust);
+    border:4px solid var(--rust);
+    padding:6px 16px;
+    border-radius:8px;
+    opacity:0;
+    pointer-events:none;
+    z-index:5;
+    background:rgba(236,224,195,0.9);
+  }
+  .stamp.fire{
+    animation: stampIn 1.1s ease forwards;
+  }
+  @keyframes stampIn{
+    0%{opacity:0; transform:translate(-50%,-50%) rotate(-18deg) scale(2.2);}
+    35%{opacity:1; transform:translate(-50%,-50%) rotate(-12deg) scale(0.92);}
+    50%{transform:translate(-50%,-50%) rotate(-12deg) scale(1);}
+    100%{opacity:0; transform:translate(-50%,-50%) rotate(-12deg) scale(1);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .stamp.fire{animation:none; opacity:0;}
+  }
+
+  /* ---------- Trader panel ---------- */
+  .block{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .block h3{
+    font-family:'Rye',cursive;
+    font-size:16px;
+    margin:0 0 10px;
+    color:var(--rust);
+  }
+  table.mat{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  table.mat th, table.mat td{
+    text-align:left;
+    padding:6px 4px;
+    border-bottom:1px solid var(--paper-edge);
+  }
+  table.mat th{
+    font-family:'Special Elite',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:var(--rust);
+  }
+
+
+  .note{
+    font-size:11.5px;color:var(--paper-dark);font-style:italic;
+    margin-top:4px;
+  }
+
+  /* --- Trader run timer --- */
+  .hidden{display:none!important;}
+
+  .run-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .run-watch{
+    background:radial-gradient(circle at 30% 25%, #f4ead0, var(--paper) 70%);
+    border:2px solid var(--brass);
+    border-radius:12px;
+    padding:12px 8px;
+    text-align:center;
+  }
+  .run-watch .eyebrow{color:var(--rust-dark);font-size:10px;}
+  .run-digits{
+    font-family:'Special Elite',monospace;
+    font-size:clamp(20px,6vw,26px);
+    letter-spacing:1px;
+    margin:4px 0 2px;
+    color:var(--ink);
+  }
+  .run-digits.urgent{color:var(--rust-dark);}
+  .run-sub{font-size:10.5px;color:#5a4a30;}
+
+  .goods-display{margin-bottom:14px;}
+  .goods-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:6px;
+  }
+  .goods-label{font-size:13px;color:var(--ink);}
+  .goods-big{
+    font-family:'Special Elite',monospace;
+    font-size:26px;
+    color:var(--ink);
+  }
+  .goods-of{font-size:15px;color:#5a4a30;}
+
+  .wagon-track{
+    height:22px;
+    background:var(--paper-dark);
+    border-radius:10px;
+    overflow:visible;
+    border:1px solid var(--paper-edge);
+    position:relative;
+    margin-bottom:8px;
+  }
+  .wagon-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--rust),var(--brass));
+    border-radius:10px;
+    transition:width .4s ease;
+    position:relative;
+    z-index:1;
+  }
+  .resupply-markers{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+  .resupply-mark{
+    position:absolute;
+    top:-4px;
+    bottom:-4px;
+    width:3px;
+    background:var(--leather);
+    border-radius:2px;
+    z-index:2;
+    transform:translateX(-50%);
+  }
+
+  .resupply-strip{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .rs-chip{
+    font-family:'Special Elite',monospace;
+    font-size:10.5px;
+    padding:3px 8px;
+    border-radius:5px;
+    background:var(--leather-3);
+    border:1px solid var(--paper-edge);
+    color:#5a4a30;
+  }
+  .rs-chip.done{
+    background:var(--sage);
+    color:#f3f3e9;
+    border-color:var(--sage-light);
+    text-decoration:line-through;
+  }
+  .rs-chip.due{
+    background:var(--rust);
+    color:#fff;
+    border-color:var(--rust);
+    animation:pulse 1.2s ease infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+
+  .alert-box{
+    background:#f9e6e0;
+    border:1px solid var(--rust);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:13px;
+    color:var(--rust-dark);
+    margin-bottom:12px;
+  }
+  .alert-box.alert-done{
+    background:#e3ecd9;
+    border-color:var(--sage-light);
+    color:var(--sage-light);
+  }
+  .alert-box.alert-delivery{
+    background:#f0e9d8;
+    border-color:var(--brass);
+    color:var(--ink);
+  }
+
+  .spend-tally{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--leather-2);
+    border:1px solid var(--brass);
+    border-radius:8px;
+    padding:8px 12px;
+    margin-bottom:12px;
+  }
+  .tally-label{font-size:12px;color:#5a4a30;}
+  .tally-val{
+    font-family:'Special Elite',monospace;
+    font-size:16px;
+    color:var(--brass-light);
+  }
+
+  .run-actions{margin-top:6px;}
+  .run-start-btn{width:100%;}
+
+  /* ============ NATURALIST ============ */
+  .nat-card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:10px;
+    margin-bottom:9px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+  .nat-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    cursor:pointer;
+  }
+  .nat-head .nat-info{flex:1;min-width:0;}
+  .nat-head h4{
+    margin:0 0 2px;
+    font-size:14px;
+    font-weight:700;
+  }
+  .nat-head h4.harriet-animal{color:var(--rust-dark);}
+  .nat-meta{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+    font-size:11px;
+    color:#5a4a30;
+    line-height:1.4;
+  }
+  .nat-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:3px;
+    background:var(--leather-3);
+    border:1px solid var(--paper-edge);
+    border-radius:5px;
+    padding:2px 6px;
+    font-family:'Special Elite',monospace;
+    font-size:10px;
+    white-space:nowrap;
+  }
+  .nat-badge.harriet-badge{
+    background:#f9e6e0;
+    border-color:var(--rust);
+    color:var(--rust);
+  }
+  .nat-progress{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .nat-pips{
+    display:flex;gap:3px;
+  }
+  .nat-pip{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--paper-edge);
+    border:1px solid #b5a07a;
+  }
+  .nat-pip.done{background:var(--sage);border-color:var(--sage-light);}
+  .nat-chev{font-size:16px;color:var(--rust-dark);transition:transform .2s;flex-shrink:0;}
+  .nat-card.open .nat-chev{transform:rotate(180deg);}
+
+  .nat-body{
+    display:none;
+    padding:0 12px 12px;
+    border-top:1px dashed var(--paper-edge);
+  }
+  .nat-card.open .nat-body{display:block;}
+
+  .nat-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    padding-top:10px;
+  }
+  .act-chip{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:7px 10px;
+    border-radius:7px;
+    border:1px solid var(--paper-edge);
+    background:#f5ecd6;
+    font-size:12px;
+    cursor:pointer;
+    user-select:none;
+    transition:background .15s, border-color .15s;
+  }
+  .act-chip input{accent-color:var(--sage-light);width:14px;height:14px;flex-shrink:0;}
+  .act-chip.done{
+    background:var(--sage);
+    color:#f3f3e9;
+    border-color:var(--sage-light);
+  }
+  .act-chip.kill-chip.done{
+    background:var(--rust);
+    border-color:var(--rust);
+  }
+
+  /* ============ MOONSHINER ============ */
+  .moon-controls{display:flex;flex-direction:column;gap:12px;}
+  .moon-ctrl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .moon-ctrl-label{font-size:13px;color:var(--ink);}
+
+  .moon-seg{display:flex;border:1px solid var(--rust-dark);border-radius:8px;overflow:hidden;}
+  .seg-btn{
+    flex:1;
+    font-family:'Special Elite',monospace;
+    font-size:11.5px;
+    padding:7px 4px;
+    border:none;
+    background:transparent;
+    color:var(--rust-dark);
+    cursor:pointer;
+  }
+  .seg-btn + .seg-btn{border-left:1px solid var(--rust-dark);}
+  .seg-btn.active{background:var(--rust);color:#fdf6e8;}
+
+  .moon-toggle{display:flex;align-items:center;cursor:pointer;}
+  .toggle-track{
+    width:42px;height:24px;border-radius:12px;
+    background:var(--paper-edge);border:1px solid #b5a07a;
+    position:relative;transition:background .2s;
+    display:block;
+  }
+  .moon-toggle input:checked + .toggle-track{background:var(--sage);}
+  .toggle-thumb{
+    width:18px;height:18px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);
+    position:absolute;top:2px;left:2px;
+    transition:left .2s;
+  }
+  .moon-toggle input:checked + .toggle-track .toggle-thumb{left:20px;}
+  .moon-toggle input{display:none;}
+
+  .moon-brew-info{
+    font-size:12.5px;
+    color:var(--rust);
+    background:#f9e6e0;
+    border:1px solid var(--rust);
+    border-radius:7px;
+    padding:8px 10px;
+  }
+
+  /* recipe cards */
+  .recipe-card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:10px;
+    margin-bottom:9px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .recipe-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 13px;
+    cursor:pointer;
+  }
+  .recipe-stars{
+    font-size:15px;
+    flex-shrink:0;
+    letter-spacing:-1px;
+  }
+  .recipe-titles{flex:1;min-width:0;}
+  .recipe-titles h4{margin:0;font-size:14.5px;font-weight:700;}
+  .recipe-sell{
+    font-family:'Special Elite',monospace;
+    font-size:11px;
+    color:var(--sage-light);
+  }
+  .recipe-unlock{
+    font-size:11px;
+    color:rgba(200,160,48,0.75);
+    font-style:italic;
+    margin-top:2px;
+  }
+  .recipe-chev{font-size:16px;color:var(--rust-dark);transition:transform .2s;flex-shrink:0;}
+  .recipe-card.open .recipe-chev{transform:rotate(180deg);}
+
+  .recipe-body{
+    display:none;
+    padding:0 13px 13px;
+    border-top:1px dashed var(--paper-edge);
+  }
+  .recipe-card.open .recipe-body{display:block;}
+
+  .ingredient-list{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    margin-top:10px;
+  }
+  .ingredient-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+  }
+  .ing-name{flex:1;font-weight:600;}
+  .ing-source{
+    font-size:11px;
+    color:#5a4a30;
+    font-style:italic;
+    text-align:right;
+  }
+  .ing-dot{
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  }
+  .src-buy{background:#5c6e4f;}
+  .src-nazar{background:#b8924a;}
+  .src-wild{background:#c17b32;}
+  .src-loot{background:#9c3b2e;}
+
+  .source-legend{
+    display:flex;gap:10px;flex-wrap:wrap;
+    margin-top:10px;
+    padding-top:8px;
+    border-top:1px dashed var(--paper-edge);
+    font-size:10.5px;
+    color:#5a4a30;
+  }
+  .src-leg{display:flex;align-items:center;gap:4px;}
+  .src-leg-dot{width:8px;height:8px;border-radius:50%;}
+
+  /* ============ BOUNTY HUNTER ============ */
+  .bounty-card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:10px;
+    margin-bottom:9px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+  .bounty-card.prestigious{
+    border-left:3px solid var(--brass);
+  }
+  .bounty-inner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 13px;
+  }
+  .bounty-info{flex:1;min-width:0;}
+  .bounty-info h4{
+    margin:0 0 1px;
+    font-size:14px;
+    font-weight:700;
+    line-height:1.2;
+  }
+  .bounty-alias{
+    font-style:italic;
+    font-size:11.5px;
+    color:var(--rust);
+    margin-bottom:3px;
+  }
+  .bounty-meta{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .bounty-badge{
+    font-family:'Special Elite',monospace;
+    font-size:10px;
+    background:var(--leather-3);
+    border:1px solid var(--paper-edge);
+    border-radius:5px;
+    padding:2px 6px;
+    color:#5a4a30;
+    white-space:nowrap;
+  }
+  .bounty-badge.payout{
+    color:var(--sage-light);
+    background:#e3ecd9;
+    border-color:var(--sage-light);
+  }
+  .bounty-badge.prestige{
+    color:#8a6a2e;
+    background:#f5ecd6;
+    border-color:var(--brass);
+  }
+
+  /* Star rating control */
+  .star-control{
+    display:flex;
+    gap:4px;
+    flex-shrink:0;
+  }
+  .star-btn{
+    font-size:22px;
+    line-height:1;
+    cursor:pointer;
+    background:none;
+    border:none;
+    padding:2px;
+    color:var(--paper-edge);
+    transition:color .15s, transform .1s;
+  }
+  .star-btn:hover{transform:scale(1.15);}
+  .star-btn.lit{color:#d4a017;}
+  .star-btn.lit-5{color:#c59f3c; text-shadow:0 0 8px rgba(212,160,23,0.5);}
+
+  /* Completion stamp on fully starred cards */
+  .bounty-card.all-done::after{
+    content:'CAUGHT';
+    position:absolute;
+    top:50%; right:14px;
+    transform:translateY(-50%) rotate(-8deg);
+    font-family:'Rye',cursive;
+    font-size:13px;
+    color:var(--rust);
+    border:2px solid var(--rust);
+    border-radius:5px;
+    padding:2px 8px;
+    opacity:0.45;
+    pointer-events:none;
+  }
+
+  footer{
+    max-width:720px;margin:24px auto 0;padding:14px 18px 4px;
+    font-size:11px;color:var(--paper-dark);text-align:center;line-height:1.6;
+    opacity:0.75;
+  }
+</style>
+</head>
+<body>
+
+<header class="banner">
+  <div class="eyebrow">Established 1899 · Frontier Pursuits</div>
+  <h1>The Last Frontier</h1>
+  <p>Out here, the quiet ones leave the biggest mark.</p>
+</header>
+
+<div class="wrap">
+  <div class="watches">
+    <div class="watch">
+      <div class="eyebrow">Collectibles Reset</div>
+      <div class="digits" id="cd-reset">--:--:--</div>
+      <div class="local" id="cd-reset-local">resets daily at 00:00 UTC</div>
+    </div>
+    <div class="watch">
+      <div class="eyebrow">Nazar Moves Camp</div>
+      <div class="digits" id="cd-nazar">--:--:--</div>
+      <div class="local" id="cd-nazar-local">moves daily at 06:00 UTC</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="collector">Collector</button>
+    <button class="tab-btn" data-tab="trader">Trader</button>
+    <button class="tab-btn" data-tab="naturalist">Naturalist</button>
+    <button class="tab-btn" data-tab="moonshiner">Moonshiner</button>
+    <button class="tab-btn" data-tab="bounty">Bounty Hunter</button>
+  </div>
+
+  <!-- ============= COLLECTOR PANEL ============= -->
+  <div class="panel active" id="panel-collector">
+    <div class="summary">
+      <div class="stat"><span class="num" id="sum-sets">0</span><span class="lbl">Sets Ready</span></div>
+      <div class="stat"><span class="num" id="sum-needed">0</span><span class="lbl">Still Needed</span></div>
+      <div class="stat"><span class="num" id="sum-items">0/184</span><span class="lbl">Types Found</span></div>
+      <div class="stat"><span class="num" id="sum-value">$0</span><span class="lbl">Sell Value</span></div>
+    </div>
+
+    <div class="map-banner">
+      <p>Locations rotate daily across 6 cycles — use the live community map to find today's spawn points.</p>
+      <a class="btn map-link" href="https://jeanropke.github.io/RDR2CollectorsMap/" target="_blank" rel="noopener">🗺️ Open Map ↗</a>
+    </div>
+
+    <div class="filter-toggle">
+      <button class="filter-btn active" data-mode="needed">🎯 Needed for next set</button>
+      <button class="filter-btn" data-mode="all">📋 All items</button>
+    </div>
+
+    <div id="collector-categories"></div>
+  </div>
+
+  <!-- ============= TRADER PANEL ============= -->
+  <div class="panel" id="panel-trader">
+
+    <!-- Production Run Timer -->
+    <div class="block" id="trader-run-block">
+      <h3>Production Run</h3>
+
+      <!-- STATE 1: Idle — buy initial supplies first -->
+      <div class="run-status" id="run-status-idle">
+        <p class="note" style="margin:0 0 10px;">Cripps needs supplies before he can start. Purchase them first — delivery takes 10 minutes before production begins.</p>
+        <button class="btn" id="run-presupply-btn" style="width:100%;">💰 Resupply #1 — Purchase Initial Supplies ($20)</button>
+      </div>
+
+      <!-- STATE 2: Pre-production delivery — waiting for initial supplies -->
+      <div class="run-status hidden" id="run-status-predelivery">
+        <div class="alert-box alert-delivery" style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong>📦 Resupply #1 on the way…</strong>
+            <span class="run-digits" id="cd-predelivery" style="font-size:20px;">10:00</span>
+          </div>
+          <div style="height:8px;background:rgba(0,0,0,0.1);border-radius:4px;overflow:hidden;">
+            <div id="predelivery-fill" style="height:100%;background:var(--brass);width:0%;transition:width 1s linear;"></div>
+          </div>
+          <div style="font-size:11px;margin-top:5px;opacity:0.8;">Cripps will start automatically when supplies arrive.</div>
+        </div>
+        <button class="btn ghost" id="run-precancel-btn" style="width:100%;">✕ Cancel</button>
+      </div>
+
+      <!-- STATE 3: Active — Cripps is working -->
+      <div class="run-status hidden" id="run-status-active">
+        <div class="run-grid">
+          <div class="run-watch">
+            <div class="eyebrow">Next Resupply In</div>
+            <div class="run-digits" id="cd-resupply">00:50:00</div>
+            <div class="run-sub" id="resupply-label">Resupply #2 due at 25 goods</div>
+          </div>
+          <div class="run-watch">
+            <div class="eyebrow">Full Wagon In</div>
+            <div class="run-digits" id="cd-wagon">03:20:00</div>
+            <div class="run-sub">100 goods @ 2 min each</div>
+          </div>
+        </div>
+
+        <div class="goods-display">
+          <div class="goods-row">
+            <span class="goods-label">Goods produced</span>
+            <span class="goods-big" id="run-goods">0 <span class="goods-of">/ 100</span></span>
+          </div>
+          <div class="wagon-track">
+            <div class="wagon-fill" id="wagon-fill" style="width:0%"></div>
+            <div class="resupply-markers">
+              <div class="resupply-mark" style="left:25%" title="Resupply #2 at 25 goods"></div>
+              <div class="resupply-mark" style="left:50%" title="Resupply #3 at 50 goods"></div>
+              <div class="resupply-mark" style="left:75%" title="Resupply #4 at 75 goods"></div>
+            </div>
+          </div>
+          <div class="resupply-strip" id="resupply-strip">
+            <span class="rs-chip done" id="rs-1">✓ Resupply #1</span>
+            <span class="rs-chip" id="rs-2">Resupply #2</span>
+            <span class="rs-chip" id="rs-3">Resupply #3</span>
+            <span class="rs-chip" id="rs-4">Resupply #4</span>
+          </div>
+        </div>
+
+        <div class="alert-box hidden" id="resupply-alert">
+          ⚠️ <strong>Resupply needed!</strong> Cripps is about to run dry.
+          <button class="btn" id="resupply-done-btn" style="margin-top:8px;display:block;width:100%">💰 Purchased supplies ($20) — start 10 min delivery</button>
+        </div>
+
+        <div class="alert-box alert-delivery hidden" id="delivery-alert">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong>📦 Supplies on the way…</strong>
+            <span class="run-digits" id="cd-delivery" style="font-size:20px;">10:00</span>
+          </div>
+          <div style="height:8px;background:rgba(0,0,0,0.1);border-radius:4px;overflow:hidden;">
+            <div id="delivery-fill" style="height:100%;background:var(--brass);width:0%;transition:width 1s linear;"></div>
+          </div>
+          <div style="font-size:11px;margin-top:5px;opacity:0.8;">Production resumes automatically when supplies arrive.</div>
+        </div>
+
+        <div class="spend-tally" id="spend-tally">
+          <span class="tally-label">Total resupply spend this run:</span>
+          <span class="tally-val" id="tally-val">$20</span>
+        </div>
+
+        <div class="alert-box alert-done hidden" id="wagon-alert">
+          🎉 <strong>Wagon is full!</strong> 100 goods ready. Head to a delivery point while the iron's hot.
+        </div>
+
+        <div class="run-actions">
+          <button class="btn ghost" id="run-reset-btn">✕ End run &amp; reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best Materials -->
+    <div class="block">
+      <h3>Best Materials Per Trip</h3>
+      <table class="mat">
+        <thead><tr><th>Animal</th><th>Perfect Yield</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Cougar</td><td>~13</td><td>Best single-carcass yield in the game</td></tr>
+          <tr><td>Buck / Deer</td><td>~10</td><td>Reliable, common, your bread and butter</td></tr>
+          <tr><td>Bison</td><td>High (pelt)</td><td>Pelt only — carcass too big to carry solo</td></tr>
+          <tr><td>Turkey</td><td>Low, fast</td><td>Best small-game source, quick to bag</td></tr>
+          <tr><td>Fish</td><td>None</td><td>Doesn't count toward materials — skip</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Keep carcasses whole — skinning before donating lowers the yield. Lasso a second carcass to your horse to double up each trip.</p>
+    </div>
+
+  </div>
+
+  <!-- ============= NATURALIST PANEL ============= -->
+  <div class="panel" id="panel-naturalist" style="padding:16px 14px 8px;">
+
+    <div class="summary" id="nat-summary">
+      <div class="stat"><span class="num" id="nat-total">0/32</span><span class="lbl">Animals Done</span></div>
+      <div class="stat"><span class="num" id="nat-actions">0/224</span><span class="lbl">Actions Logged</span></div>
+      <div class="stat"><span class="num" id="nat-harriet">0/10</span><span class="lbl">Harriet Finds</span></div>
+      <div class="stat"><span class="num" id="nat-pct">0%</span><span class="lbl">Complete</span></div>
+    </div>
+
+    <div class="map-banner" style="margin-bottom:14px;">
+      <p>Animals shown in <span style="color:var(--rust);font-weight:600;">red</span> must be purchased from Harriet — no fast travel location applies. All others use the listed fast travel point.</p>
+    </div>
+
+    <div id="nat-categories"></div>
+  </div>
+
+  <!-- ============= MOONSHINER PANEL ============= -->
+  <div class="panel" id="panel-moonshiner" style="padding:16px 14px 8px;">
+
+    <!-- Brew Timer -->
+    <div class="block">
+      <h3>Still Timer</h3>
+
+      <div id="moon-idle">
+        <div class="moon-controls">
+          <div class="moon-ctrl-row">
+            <label class="moon-ctrl-label">Mash Strength</label>
+            <div class="moon-seg" id="moon-strength-seg">
+              <button class="seg-btn active" data-strength="weak">Weak</button>
+              <button class="seg-btn" data-strength="average">Average</button>
+              <button class="seg-btn" data-strength="strong">Strong</button>
+            </div>
+          </div>
+          <div class="moon-ctrl-row">
+            <label class="moon-ctrl-label">Master Distiller (Rank 15)</label>
+            <label class="moon-toggle">
+              <input type="checkbox" id="moon-rank15">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="moon-brew-info" id="moon-brew-preview">
+            Brew time: <strong id="moon-preview-time">60 min</strong> · Sell value: <strong id="moon-preview-sell">up to $247.50</strong>
+          </div>
+        </div>
+        <button class="btn" id="moon-start-btn" style="width:100%;margin-top:12px;">🥃 Start Still</button>
+      </div>
+
+      <div id="moon-active" class="hidden">
+        <div class="run-grid">
+          <div class="run-watch">
+            <div class="eyebrow">Batch Ready In</div>
+            <div class="run-digits" id="moon-cd">00:00:00</div>
+            <div class="run-sub" id="moon-cd-sub">Brewing…</div>
+          </div>
+          <div class="run-watch">
+            <div class="eyebrow">Strength / Sell</div>
+            <div class="run-digits" style="font-size:18px;" id="moon-active-label">Strong</div>
+            <div class="run-sub" id="moon-active-sell">up to $247.50</div>
+          </div>
+        </div>
+        <div class="wagon-track" style="margin-top:10px;">
+          <div class="wagon-fill" id="moon-fill" style="background:linear-gradient(90deg,#6b3fa0,#c59f3c);width:0%;"></div>
+        </div>
+        <div class="alert-box alert-done hidden" id="moon-done-alert">
+          🥃 <strong>Batch is ready!</strong> Head to the shack and deliver while the bottles are fresh.
+        </div>
+        <div class="run-actions" style="margin-top:10px;">
+          <button class="btn ghost" id="moon-reset-btn">✕ Cancel batch</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipes -->
+    <h2 class="category" style="margin-top:4px;">All 10 Recipes</h2>
+    <div class="map-banner" style="margin-bottom:14px;">
+      <p>★★★ recipes need at least one collectible ingredient. Vanilla Flower can't be bought from Nazar — find it wild in the swamp or loot from moonshiners. Berries can't be bought from Nazar either.</p>
+    </div>
+    <div id="moon-recipes"></div>
+
+  </div>
+
+  <!-- ============= BOUNTY HUNTER PANEL ============= -->
+  <div class="panel" id="panel-bounty" style="padding:16px 14px 8px;">
+
+    <div class="summary" id="bounty-summary">
+      <div class="stat"><span class="num" id="bh-five-star">0/13</span><span class="lbl">5-Star Complete</span></div>
+      <div class="stat"><span class="num" id="bh-stars">0/65</span><span class="lbl">Total Stars</span></div>
+      <div class="stat"><span class="num" id="bh-payout">$0</span><span class="lbl">Stars × Base Pay</span></div>
+      <div class="stat"><span class="num" id="bh-pct">0%</span><span class="lbl">Complete</span></div>
+    </div>
+
+    <!-- ── Legendary Cooldown Timer ── -->
+    <div class="block" style="margin-bottom:12px;">
+      <h3>Legendary Bounty Cooldown</h3>
+      <p class="note" style="margin-bottom:10px;">48 min global cooldown after any successful legendary bounty. No in-game indicator — start this timer the moment you hand in your bounty. Failing a mission does <em>not</em> trigger the cooldown.</p>
+
+      <div id="bh-leg-idle">
+        <button class="btn" id="bh-leg-start" style="width:100%;">⏱ Start 48-min Cooldown</button>
+      </div>
+      <div id="bh-leg-active" class="hidden">
+        <div class="run-grid">
+          <div class="run-watch">
+            <div class="eyebrow">Legendary Cooldown</div>
+            <div class="run-digits" id="bh-leg-cd">48:00</div>
+            <div class="run-sub" id="bh-leg-sub">Next legendary available at —</div>
+          </div>
+          <div class="run-watch">
+            <div class="eyebrow">Status</div>
+            <div class="run-digits" style="font-size:16px;" id="bh-leg-status">On Cooldown</div>
+            <div class="run-sub">Infamous bounties still available</div>
+          </div>
+        </div>
+        <div class="wagon-track" style="margin-top:8px;">
+          <div class="wagon-fill" id="bh-leg-fill" style="background:linear-gradient(90deg,var(--rust),var(--brass));width:0%;"></div>
+        </div>
+        <div class="alert-box alert-done hidden" id="bh-leg-done">
+          🎯 <strong>Legendary bounties are back on the board!</strong> Head to any Bounty Board to pick your next target.
+        </div>
+        <button class="btn ghost" id="bh-leg-reset" style="width:100%;margin-top:8px;">✕ Clear</button>
+      </div>
+    </div>
+
+    <div class="map-banner" style="margin-bottom:14px;">
+      <p>Each bounty has 5 difficulty levels — tap the stars as you complete each run. The last 3 require the <strong style="color:var(--brass-light);">Prestigious Bounty Hunter License</strong>.</p>
+    </div>
+
+    <h2 class="category" style="margin-top:4px;">Standard Legendary Bounties</h2>
+    <div id="bh-standard"></div>
+
+    <h2 class="category">Prestigious License Required</h2>
+    <div id="bh-prestigious"></div>
+
+  </div>
+</div><!-- end .wrap -->
+
+<footer>
+  Collector set lists cover all 17 known sets across the rotating spawn cycles, and each item tracks how many you're holding (up to the in-game cap of 10). Rockstar randomises which cycle is live, so this ledger can't predict tonight's exact spots — tap "Find on map" on any set to open the live community map, and use the reset clock above to time your runs. Progress is saved to your device only.
+</footer>
+
+<script>
+(function(){
+
+  /* ============ DATA ============ */
+  const RANKS = ['Ace','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Page','Knight','Queen','King'];
+  function tarot(suit){ return RANKS.map(r => r + ' of ' + suit); }
+
+  const SETS = [
+    {id:'cups', cat:'Tarot Cards', name:'Suit of Cups', value:240.50, items:tarot('Cups')},
+    {id:'swords', cat:'Tarot Cards', name:'Suit of Swords', value:286.50, items:tarot('Swords')},
+    {id:'wands', cat:'Tarot Cards', name:'Suit of Wands', value:239.00, items:tarot('Wands')},
+    {id:'pentacles', cat:'Tarot Cards', name:'Suit of Pentacles', value:287.00, items:tarot('Pentacles')},
+
+    {id:'bracelets', cat:'Lost Jewelry', name:'Jewelry Bracelets', value:271.50, tools:'Shovel + Metal Detector', items:[
+      'Infanta Turquoise Bracelet','Helena Sapphire Bracelet','Greco Sapphire Bracelet','Abello Ruby Bangle Bracelet',
+      'Ojeda Rose Gold Bangle Bracelet','Durant Pearl Bracelet','Hajnal Garnet Bangle Bracelet','Elliston Carved Bracelet']},
+    {id:'earrings', cat:'Lost Jewelry', name:'Jewelry Earrings', value:364.50, tools:'Shovel + Metal Detector', items:[
+      'Emmeline Coral Earrings','Harford Garnet Earrings','Orchidee Diamond Earrings','Royal Victoria Diamond Earrings',
+      'Beauchene Ruby Earrings','Sterling Tooth Earrings','Duchess Emerald Earrings','Ursula Citrine Earrings',
+      'Endicott Diamond Earrings','Josephine Pearl Earrings','Calumet Turquoise Earrings']},
+    {id:'necklaces', cat:'Lost Jewelry', name:'Jewelry Necklaces', value:335.00, tools:'Shovel + Metal Detector', items:[
+      'Dane Topaz Necklace','Richelieu Amethyst Necklace','Blakely Miniature Necklace','Pelle Pearl Necklace',
+      'Gosselin White Gold Necklace','Rou Pearl Necklace','Braxton Amethyst Necklace','Tuamotu Pearl Necklace','Ainsworth Cross Necklace']},
+    {id:'rings', cat:'Lost Jewelry', name:'Jewelry Rings', value:378.00, tools:'Shovel + Metal Detector', items:[
+      'Harland Coral Ring','Magnate Turquoise Ring','Pilgrim Moonstone Ring','Bonnard Pearl Ring','Banais Topaz Ring',
+      'Beaulieux Diamond Ring','Yates Diamond Ring','Aubrey Onyx Ring','Bosque Emerald Ring','Sackville Diamond Ring','Thorburn Turquoise Ring']},
+
+    {id:'bottles', cat:'Antiques & Relics', name:'Antique Alcohol Bottles', value:160.50, tools:'No tools needed — often looted off Bureau agents', items:[
+      'Absinthe Bottle','Old Tom Gin Bottle','Gran Corazon Madeira Bottle','Tennessee Whiskey Bottle','Caribbean Rum Bottle',
+      'Cognac Bottle','Irish Whiskey Bottle','Scotch Whisky Bottle','London Dry Gin Bottle']},
+    {id:'heirlooms', cat:'Antiques & Relics', name:'Family Heirlooms', value:292.50, tools:'Mostly found in houses — some need Shovel + Metal Detector', items:[
+      'Jade Hairpin','Cherrywood Comb','Ebony Hairbrush','Metal Hairpin','Carved Wooden Hairpin','Boxwood Comb',
+      'Goat Hair Brush','Ebony Hairpin','Ivory Hairpin','Rosewood Hairbrush','Tortoiseshell Comb','Ivory Comb',
+      'Horse Hair Brush','Boar Bristle Brush','New Guinea Rosewood Hairbrush']},
+    {id:'arrowheads', cat:'Antiques & Relics', name:'Arrowheads', value:289.00, tools:'Shovel + Metal Detector', items:[
+      'Quartz Arrowhead','Rough Arrowhead','Chipped Arrowhead','Feldspar Arrowhead','Obsidian Arrowhead','Agate Arrowhead',
+      'Raw Arrowhead','Crude Arrowhead','Bone Arrowhead','Flint Arrowhead','Slate Arrowhead','Splintered Arrowhead']},
+    {id:'coins', cat:'Antiques & Relics', name:'Coins', value:540.00, tools:'Shovel + Metal Detector — the highest-value set', items:[
+      '1796 Halfpenny Coin','1794 Silver Dollar Coin','1797 Gold Eagle Coin','1787 One Cent Token Coin','1800 Half Dime Coin',
+      '1700 New Yorke Token Coin','1792 Liberty Quarter Coin','1800 Five Dollar Bechtler Coin','1792 Nickel Coin',
+      '1798 Draped Bust Silver Dollar Coin','1792 Quarter Coin','1795 Half Eagle Coin','1800 Gold Quarter Coin',
+      '1789 Penny Coin','1800 Gold Dollar Coin']},
+
+    {id:'flowers', cat:'Nature', name:'American Wild Flowers', value:155.50, tools:'Agarita & Blood Flower only spawn 10pm–5am in-game', items:[
+      'Texas Bluebonnet','Texas Bitterweed','Agarita','Wild Rhubarb','Cardinal Flower','Creek Plum','Blood Flower','Chocolate Daisy','Wisteria']},
+    {id:'eggs', cat:'Nature', name:'Bird Eggs', value:182.50, tools:'Varmint Rifle or Small Game Arrow only — anything stronger breaks the egg', items:[
+      'Eagle Egg','Hawk Egg','Loon Egg','Goose Egg','Heron Egg','Spoonbill Egg','Egret Egg','Vulture Egg','Duck Egg']},
+
+    {id:'coastal', cat:'Fossils', name:'Coastal Fossils', value:217.00, tools:'Metal Detector only', items:[
+      'Agatized Coral Fossil','Bivalve Fossil','Brachiopod Fossil','Common Petrified Wood Fossil','Cephalopod Fossil',
+      'Petoskey Stone Fossil','Neospirifer Fossil']},
+    {id:'oceanic', cat:'Fossils', name:'Oceanic Fossils', value:288.50, tools:'Metal Detector only', items:[
+      'Tully Monster Fossil','Isotelus Trilobite Fossil','Sea Lily Fossil','Cryptolithus Trilobite Fossil',
+      'Yellow Cat Petrified Wood Fossil','Rainbow Petrified Wood Fossil','Sea Scorpion Fossil']},
+    {id:'megafauna', cat:'Fossils', name:'Megafauna Fossils', value:321.00, tools:'Metal Detector only', items:[
+      'Upper Tooth Fossil','Serrated Tooth Fossil','Toe Sickle Claw Fossil','Tail Spike Fossil','Brow Horn Fossil','Front Tooth Fossil']},
+  ];
+  const CATEGORY_ORDER = ['Tarot Cards','Lost Jewelry','Antiques & Relics','Nature','Fossils'];
+  const TOTAL_ITEMS = SETS.reduce((n,s)=>n+s.items.length,0);
+
+  /* ============ STORAGE ============ */
+  const COLLECTOR_KEY = 'rdo-collector-counts-v2';
+  const COLLECTOR_KEY_V1 = 'rdo-collector-progress-v1';
+  const TRADER_KEY = 'rdo-trader-state-v1';
+  const MAX_QTY = 10;
+
+  let collectorState = {};
+  let traderState = { run: null };
+
+  function defaultCollectorState(){
+    const s = {};
+    SETS.forEach(set => s[set.id] = new Array(set.items.length).fill(0));
+    return s;
+  }
+
+  async function loadCollector(){
+    collectorState = defaultCollectorState();
+    try{
+      const r = localStorage.getItem(COLLECTOR_KEY);
+      if(!r) throw new Error('Not found');
+      const parsed = JSON.parse(r);
+      collectorState = Object.assign(defaultCollectorState(), parsed);
+      return;
+    }catch(e){ /* no v2 data yet, try migrating from v1 below */ }
+    try{
+      const r1 = localStorage.getItem(COLLECTOR_KEY_V1);
+      if(!r1) throw new Error('Not found');
+      const parsedBool = JSON.parse(r1);
+      const migrated = {};
+      Object.keys(parsedBool).forEach(id => {
+        migrated[id] = parsedBool[id].map(v => v ? 1 : 0);
+      });
+      collectorState = Object.assign(defaultCollectorState(), migrated);
+      saveCollector();
+    }catch(e){ /* nothing saved yet, keep defaults */ }
+  }
+  async function saveCollector(){
+    try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorState)); }
+    catch(e){ console.error('save failed', e); }
+  }
+
+  async function loadTrader(){
+    try{
+      const r = localStorage.getItem(TRADER_KEY);
+      if(!r) throw new Error('Not found');
+      traderState = Object.assign(traderState, JSON.parse(r));
+    }catch(e){ /* keep defaults */ }
+  }
+  async function saveTrader(){
+    try{ localStorage.setItem(TRADER_KEY, JSON.stringify(traderState)); }
+    catch(e){ console.error('save failed', e); }
+  }
+
+  /* ============ RENDER: COLLECTOR ============ */
+  const catWrap = document.getElementById('collector-categories');
+  let viewMode = 'needed'; // 'needed' | 'all'
+  const openSetIds = new Set();
+
+  function renderCollector(){
+    catWrap.innerHTML = '';
+    CATEGORY_ORDER.forEach(cat => {
+      const h = document.createElement('h2');
+      h.className = 'category';
+      h.textContent = cat;
+      catWrap.appendChild(h);
+      SETS.filter(s => s.cat === cat).forEach(set => catWrap.appendChild(renderSetCard(set)));
+    });
+    updateSummary();
+  }
+
+  function setMapUrl(set){
+    return 'https://jeanropke.github.io/RDR2CollectorsMap/';
+  }
+
+  // Indices of items that are the bottleneck for completing one more full set
+  function neededIndices(counts){
+    const readySets = Math.min(...counts);
+    if(readySets >= MAX_QTY) return []; // every item already maxed out
+    return counts.reduce((arr, c, idx) => { if(c === readySets) arr.push(idx); return arr; }, []);
+  }
+
+  function renderSetCard(set){
+    const counts = collectorState[set.id];
+    const total = counts.length;
+    const typesFound = counts.filter(c => c > 0).length;
+    const readySets = Math.min(...counts);
+    const needed = neededIndices(counts);
+
+    const card = document.createElement('div');
+    card.className = 'set-card' + (openSetIds.has(set.id) ? ' open' : '');
+    card.dataset.id = set.id;
+
+    const head = document.createElement('div');
+    head.className = 'set-head';
+    head.innerHTML = `
+      <div class="titles">
+        <h3>${set.name}</h3>
+        <div class="meta">${readySets} ready · ${needed.length} needed for next · ${typesFound}/${total} types found · $${set.value.toFixed(2)} each</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${(typesFound/total*100)}%"></div></div>
+      </div>
+      <div class="chev">⌄</div>
+    `;
+    head.addEventListener('click', () => {
+      card.classList.toggle('open');
+      if(card.classList.contains('open')) openSetIds.add(set.id); else openSetIds.delete(set.id);
+    });
+    card.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'set-body';
+    body.appendChild(buildSetBodyInner(set));
+    card.appendChild(body);
+
+    const stamp = document.createElement('div');
+    stamp.className = 'stamp';
+    stamp.textContent = 'SOLD';
+    card.appendChild(stamp);
+
+    return card;
+  }
+
+  // Builds everything inside .set-body (tools line, item grid, action buttons)
+  function buildSetBodyInner(set){
+    const counts = collectorState[set.id];
+    const total = counts.length;
+    const readySets = Math.min(...counts);
+    const needed = neededIndices(counts);
+
+    const frag = document.createDocumentFragment();
+
+    if(set.tools){
+      const tl = document.createElement('div');
+      tl.className = 'tools-line';
+      tl.textContent = set.tools;
+      frag.appendChild(tl);
+    }
+
+    if(viewMode === 'needed'){
+      const line = document.createElement('div');
+      if(readySets >= MAX_QTY){
+        line.className = 'maxed-line';
+        line.textContent = `You're holding the max of 10 on every item — sell a set before collecting more.`;
+      } else {
+        line.className = 'need-line';
+        line.textContent = `Need 1 more of each of these ${needed.length} item${needed.length===1?'':'s'} to complete set #${readySets+1} — highlighted in red below:`;
+      }
+      frag.appendChild(line);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'item-grid';
+    const indicesToShow = set.items.map((_,i)=>i);
+    indicesToShow.forEach(idx => grid.appendChild(renderItemRow(set, idx, set.items[idx], readySets)));
+    if(viewMode === 'needed' && needed.length === 0){
+      const done = document.createElement('div');
+      done.className = 'maxed-line';
+      done.textContent = '✓ Nothing needed right now — every item already covers the next set.';
+      grid.appendChild(done);
+    }
+    frag.appendChild(grid);
+
+    const actions = document.createElement('div');
+    actions.className = 'set-actions';
+
+    const sellBtn = document.createElement('button');
+    sellBtn.className = 'btn';
+    sellBtn.textContent = 'Sell 1 set to Nazar';
+    sellBtn.disabled = readySets < 1;
+    sellBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const card = catWrap.querySelector(`.set-card[data-id="${set.id}"]`);
+      fireStamp(card);
+      collectorState[set.id] = counts.map(c => Math.max(0, c - 1));
+      saveCollector();
+      refreshSetBody(card, set);
+      updateSummary();
+    });
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'btn ghost';
+    resetBtn.textContent = 'Clear all';
+    resetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      collectorState[set.id] = new Array(total).fill(0);
+      saveCollector();
+      const card = catWrap.querySelector(`.set-card[data-id="${set.id}"]`);
+      refreshSetBody(card, set);
+      updateSummary();
+    });
+
+    const mapBtn = document.createElement('a');
+    mapBtn.className = 'btn map-link';
+    mapBtn.href = setMapUrl(set);
+    mapBtn.target = '_blank';
+    mapBtn.rel = 'noopener';
+    mapBtn.textContent = '🗺️ Find on map';
+    mapBtn.addEventListener('click', (e) => e.stopPropagation());
+
+    actions.appendChild(sellBtn);
+    actions.appendChild(resetBtn);
+    actions.appendChild(mapBtn);
+    frag.appendChild(actions);
+
+    return frag;
+  }
+
+  function renderItemRow(set, idx, itemName, readySets){
+    const count = collectorState[set.id][idx];
+    let stateClass = '';
+    if(count >= MAX_QTY) stateClass = 'full';
+    else if(count > readySets) stateClass = 'sufficient';
+    else stateClass = 'bottleneck';
+
+    const row = document.createElement('div');
+    row.className = 'item-row ' + stateClass;
+    row.innerHTML = `
+      <span class="item-name">${itemName}</span>
+      <div class="stepper">
+        <button class="step-btn" data-act="minus" ${count<=0?'disabled':''}>−</button>
+        <span class="step-count">${count}</span>
+        <button class="step-btn" data-act="plus" ${count>=MAX_QTY?'disabled':''}>+</button>
+      </div>
+    `;
+    row.querySelector('[data-act="minus"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      adjustCount(set, idx, -1);
+    });
+    row.querySelector('[data-act="plus"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      adjustCount(set, idx, 1);
+    });
+    return row;
+  }
+
+  function adjustCount(set, idx, delta){
+    const arr = collectorState[set.id];
+    arr[idx] = Math.max(0, Math.min(MAX_QTY, arr[idx] + delta));
+    saveCollector();
+    const cardEl = catWrap.querySelector(`.set-card[data-id="${set.id}"]`);
+    refreshSetBody(cardEl, set);
+    updateSummary();
+  }
+
+  function refreshSetBody(card, set){
+    const counts = collectorState[set.id];
+    const total = counts.length;
+    const typesFound = counts.filter(c => c > 0).length;
+    const readySets = Math.min(...counts);
+    const needed = neededIndices(counts);
+
+    // update header meta + progress bar
+    card.querySelector('.meta').textContent =
+      `${readySets} ready · ${needed.length} needed for next · ${typesFound}/${total} types found · $${set.value.toFixed(2)} each`;
+    card.querySelector('.progress-fill').style.width = (typesFound/total*100) + '%';
+
+    // rebuild body content in place
+    const body = card.querySelector('.set-body');
+    body.innerHTML = '';
+    body.appendChild(buildSetBodyInner(set));
+  }
+
+  function fireStamp(card){
+    const stamp = card.querySelector('.stamp');
+    stamp.classList.remove('fire');
+    void stamp.offsetWidth;
+    stamp.classList.add('fire');
+  }
+
+  function updateSummary(){
+    let setsReady = 0, typesFound = 0, readyValue = 0, totalNeeded = 0;
+    SETS.forEach(set => {
+      const counts = collectorState[set.id];
+      typesFound += counts.filter(c => c > 0).length;
+      const ready = Math.min(...counts);
+      setsReady += ready;
+      readyValue += ready * set.value;
+      totalNeeded += neededIndices(counts).length;
+    });
+    document.getElementById('sum-sets').textContent = setsReady;
+    document.getElementById('sum-items').textContent = `${typesFound}/${TOTAL_ITEMS}`;
+    document.getElementById('sum-value').textContent = `$${readyValue.toFixed(2)}`;
+    document.getElementById('sum-needed').textContent = totalNeeded;
+  }
+
+  /* ============ RENDER: TRADER ============ */
+  const SECS_PER_GOOD    = 120;   // 2 min per good
+  const GOODS_PER_WAGON  = 100;
+  const GOODS_PER_SUPPLY = 25;    // resupply every 25 goods during production
+  const RESUPPLY_COUNT   = 3;     // during production: at 25, 50, 75 goods (#2, #3, #4)
+  const DELIVERY_SECS    = 600;   // 10 min delivery wait
+  const RESUPPLY_COST    = 20;    // $20 per resupply
+
+  // traderState.run = {
+  //   phase: 'predelivery' | 'active'
+  //   preDeliveryStartMs,      ms: when initial supplies were purchased
+  //   startEpoch,              ms: when production actually started
+  //   totalPausedMs,           ms: accumulated mid-run delivery pauses
+  //   deliveryStartMs,         ms: current mid-run delivery pause start (null = not pausing)
+  //   resuppliesTriggered,     number: mid-run resupplies purchased (0-3, for #2/#3/#4)
+  // }
+  let runInterval = null;
+  let preDeliveryInterval = null;
+
+  function renderTrader(){
+    if(traderState.run){
+      if(traderState.run.phase === 'predelivery'){
+        showState('predelivery');
+        startPreDeliveryInterval();
+      } else {
+        showState('active');
+        startRunInterval();
+      }
+    } else {
+      showState('idle');
+    }
+  }
+
+  function showState(state){
+    ['idle','predelivery','active'].forEach(s => {
+      document.getElementById('run-status-'+s).classList.toggle('hidden', s !== state);
+    });
+  }
+
+  // ── Pre-production: buy initial supplies ──
+  document.getElementById('run-presupply-btn').addEventListener('click', () => {
+    traderState.run = {
+      phase: 'predelivery',
+      preDeliveryStartMs: Date.now(),
+      startEpoch: null,
+      totalPausedMs: 0,
+      deliveryStartMs: null,
+      resuppliesTriggered: 0,
+    };
+    saveTrader();
+    showState('predelivery');
+    startPreDeliveryInterval();
+  });
+
+  document.getElementById('run-precancel-btn').addEventListener('click', () => {
+    clearInterval(preDeliveryInterval); preDeliveryInterval = null;
+    traderState.run = null;
+    saveTrader();
+    showState('idle');
+  });
+
+  function startPreDeliveryInterval(){
+    if(preDeliveryInterval) clearInterval(preDeliveryInterval);
+    preDeliveryInterval = setInterval(tickPreDelivery, 1000);
+    tickPreDelivery();
+  }
+
+  function tickPreDelivery(){
+    const r = traderState.run;
+    if(!r || r.phase !== 'predelivery') return;
+    const elapsed  = Math.floor((Date.now() - r.preDeliveryStartMs) / 1000);
+    const remaining = Math.max(0, DELIVERY_SECS - elapsed);
+    document.getElementById('cd-predelivery').textContent = fmtMS(remaining);
+    document.getElementById('predelivery-fill').style.width = Math.min(100, elapsed / DELIVERY_SECS * 100) + '%';
+
+    if(remaining === 0){
+      clearInterval(preDeliveryInterval); preDeliveryInterval = null;
+      // Transition to active production
+      r.phase = 'active';
+      r.startEpoch = Date.now();
+      saveTrader();
+      showState('active');
+      startRunInterval();
+    }
+  }
+
+  // ── Reset ──
+  document.getElementById('run-reset-btn').addEventListener('click', () => {
+    clearInterval(runInterval); runInterval = null;
+    clearInterval(preDeliveryInterval); preDeliveryInterval = null;
+    traderState.run = null;
+    saveTrader();
+    resetRunUI();
+    showState('idle');
+  });
+
+  // ── Mid-run resupply purchased ──
+  document.getElementById('resupply-done-btn').addEventListener('click', () => {
+    document.getElementById('resupply-alert').classList.add('hidden');
+    document.getElementById('delivery-alert').classList.remove('hidden');
+    traderState.run.deliveryStartMs = Date.now();
+    traderState.run.resuppliesTriggered++;
+    updateTally();
+    saveTrader();
+  });
+
+  function startRunInterval(){
+    if(runInterval) clearInterval(runInterval);
+    runInterval = setInterval(tickRun, 1000);
+    tickRun();
+  }
+
+  function effectiveProductionSecs(){
+    const r = traderState.run;
+    const nowMs = Date.now();
+    const wallMs = nowMs - r.startEpoch;
+    let pausedMs = r.totalPausedMs || 0;
+    if(r.deliveryStartMs){
+      const deliveryElapsed = nowMs - r.deliveryStartMs;
+      if(deliveryElapsed >= DELIVERY_SECS * 1000){
+        pausedMs += DELIVERY_SECS * 1000;
+        r.totalPausedMs = pausedMs;
+        r.deliveryStartMs = null;
+        saveTrader();
+        document.getElementById('delivery-alert').classList.add('hidden');
+      } else {
+        pausedMs += deliveryElapsed;
+      }
+    }
+    return Math.max(0, Math.floor((wallMs - pausedMs) / 1000));
+  }
+
+  function tickRun(){
+    if(!traderState.run || traderState.run.phase !== 'active') return;
+    const r = traderState.run;
+
+    // Mid-run delivery countdown
+    if(r.deliveryStartMs){
+      const delivElapsed = Math.floor((Date.now() - r.deliveryStartMs) / 1000);
+      const delivRem = Math.max(0, DELIVERY_SECS - delivElapsed);
+      const cdEl = document.getElementById('cd-delivery');
+      if(cdEl) cdEl.textContent = fmtMS(delivRem);
+      const fillEl = document.getElementById('delivery-fill');
+      if(fillEl) fillEl.style.width = (delivElapsed / DELIVERY_SECS * 100) + '%';
+      if(delivRem === 0) document.getElementById('delivery-alert').classList.add('hidden');
+    }
+
+    const prodSecs  = effectiveProductionSecs();
+    const goodsMade = Math.min(GOODS_PER_WAGON, Math.floor(prodSecs / SECS_PER_GOOD));
+
+    // Next resupply threshold (#2=25, #3=50, #4=75 — resupply #1 already done before start)
+    const nextThreshold    = (r.resuppliesTriggered + 1) * GOODS_PER_SUPPLY;
+    const secsToNextResupply = Math.max(0, nextThreshold * SECS_PER_GOOD - prodSecs);
+
+    const totalProdSecs = GOODS_PER_WAGON * SECS_PER_GOOD;
+    const remainingPauses = Math.max(0, RESUPPLY_COUNT - r.resuppliesTriggered);
+    const remainingDeliveryMs = r.deliveryStartMs
+      ? Math.max(0, DELIVERY_SECS * 1000 - (Date.now() - r.deliveryStartMs)) : 0;
+    const wagonEtaSecs = Math.max(0,
+      totalProdSecs - prodSecs
+      + remainingPauses * DELIVERY_SECS
+      - remainingDeliveryMs / 1000
+    );
+
+    // Goods display
+    document.getElementById('run-goods').innerHTML =
+      `${goodsMade} <span class="goods-of">/ ${GOODS_PER_WAGON}</span>`;
+    document.getElementById('wagon-fill').style.width = (goodsMade / GOODS_PER_WAGON * 100) + '%';
+    document.getElementById('cd-wagon').textContent = fmtHMS(Math.round(wagonEtaSecs));
+
+    // Resupply chips — #1 always done (pre-production), #2/#3/#4 during production
+    const chip1 = document.getElementById('rs-1');
+    chip1.className = 'rs-chip done';
+    chip1.textContent = '✓ Resupply #1';
+
+    [2,3,4].forEach(n => {
+      const chip = document.getElementById('rs-'+n);
+      const threshold = (n-1) * GOODS_PER_SUPPLY; // #2=25, #3=50, #4=75
+      const triggered = r.resuppliesTriggered >= (n-1);
+      if(goodsMade >= threshold || triggered){
+        chip.className = 'rs-chip done';
+        chip.textContent = '✓ Resupply #'+n;
+      } else {
+        chip.className = 'rs-chip';
+        chip.textContent = 'Resupply #'+n;
+      }
+    });
+
+    // Resupply watch
+    const cdEl  = document.getElementById('cd-resupply');
+    const lblEl = document.getElementById('resupply-label');
+    const isDelivering  = !!r.deliveryStartMs;
+    const allDone = r.resuppliesTriggered >= RESUPPLY_COUNT;
+
+    if(goodsMade >= GOODS_PER_WAGON || allDone){
+      cdEl.textContent = '--:--';
+      cdEl.classList.remove('urgent');
+      lblEl.textContent = allDone ? 'All resupplies done' : 'Wagon full!';
+    } else if(isDelivering){
+      cdEl.textContent = '--:--';
+      cdEl.classList.remove('urgent');
+      lblEl.textContent = 'Waiting on delivery…';
+    } else {
+      cdEl.textContent = fmtHMS(secsToNextResupply);
+      // Label shows which resupply is next (#2, #3, or #4)
+      const nextNum = r.resuppliesTriggered + 2;
+      lblEl.textContent = `Resupply #${nextNum} at ${nextThreshold} goods`;
+      if(secsToNextResupply < 120){
+        cdEl.classList.add('urgent');
+        if(document.getElementById('resupply-alert').classList.contains('hidden') && !isDelivering){
+          document.getElementById('resupply-alert').classList.remove('hidden');
+        }
+      } else {
+        cdEl.classList.remove('urgent');
+      }
+    }
+
+    if(goodsMade >= GOODS_PER_WAGON){
+      document.getElementById('wagon-alert').classList.remove('hidden');
+      clearInterval(runInterval); runInterval = null;
+    }
+  }
+
+  function updateTally(){
+    // Resupply #1 ($20) always spent, plus any mid-run resupplies
+    const spent = (1 + (traderState.run ? traderState.run.resuppliesTriggered : 0)) * RESUPPLY_COST;
+    document.getElementById('tally-val').textContent = `$${spent}`;
+  }
+
+  function resetRunUI(){
+    document.getElementById('resupply-alert').classList.add('hidden');
+    document.getElementById('delivery-alert').classList.add('hidden');
+    document.getElementById('wagon-alert').classList.add('hidden');
+    document.getElementById('cd-predelivery').textContent = '10:00';
+    document.getElementById('predelivery-fill').style.width = '0%';
+    document.getElementById('cd-resupply').textContent = '00:50:00';
+    document.getElementById('cd-resupply').classList.remove('urgent');
+    document.getElementById('resupply-label').textContent = 'Resupply #2 due at 25 goods';
+    document.getElementById('cd-wagon').textContent = '03:20:00';
+    document.getElementById('run-goods').innerHTML = '0 <span class="goods-of">/ 100</span>';
+    document.getElementById('wagon-fill').style.width = '0%';
+    document.getElementById('tally-val').textContent = '$20';
+    const chip1 = document.getElementById('rs-1');
+    chip1.className = 'rs-chip done'; chip1.textContent = '✓ Resupply #1';
+    [2,3,4].forEach(n => {
+      const chip = document.getElementById('rs-'+n);
+      chip.className = 'rs-chip'; chip.textContent = 'Resupply #'+n;
+    });
+  }
+
+  function fmtHMS(totalSecs){
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    return [h,m,s].map(n => String(n).padStart(2,'0')).join(':');
+  }
+  function fmtMS(totalSecs){
+    const m = Math.floor(totalSecs / 60);
+    const s = totalSecs % 60;
+    return [m,s].map(n => String(n).padStart(2,'0')).join(':');
+  }
+  /* ============ NATURALIST DATA ============ */
+  // harriet:true = purchased from Harriet, no fast travel location
+  // Actions: Tracked, Killed, Skinned, Studied, Sedated, Sampled, Photographed
+  const NAT_ACTIONS = ['Tracked','Killed','Skinned','Studied','Sedated','Sampled','Photographed'];
+  const NAT_CATEGORIES = [
+    {
+      id:'dark', label:'Dark',
+      animals:[
+        {id:'teca_gator',      name:'Teca Gator',          location:'Saint Denis',      time:'9pm – 6am or DAY',       weather:'Fog · Rain · Storms'},
+        {id:'night_beaver',    name:'Night Beaver',         harriet:true},
+        {id:'tatanka_bison',   name:'Tatanka Bison',        location:'Emerald Station',  time:'9am – 6pm or NIGHT',     weather:'Rain · Drizzle'},
+        {id:'sapa_cougar',     name:'Sapa Cougar',          harriet:true},
+        {id:'midnight_coyote', name:'Midnight Paw Coyote',  location:'Strawberry',       time:'6am – 9pm',              weather:'Clear'},
+        {id:'katata_elk',      name:'Katata Elk',           location:'Valentine',        time:'8am – 6pm or NIGHT',     weather:'Clear · Fog'},
+        {id:'onyx_wolf',       name:'Onyx Wolf',            location:'Wapiti',           time:'9pm – 6am or DAY',       weather:'Clear'},
+        {id:'rutile_ram',      name:'Rutile Horn Ram',      harriet:true},
+      ]
+    },
+    {
+      id:'light', label:'Light',
+      animals:[
+        {id:'moon_beaver',     name:'Moon Beaver',          location:'Van Horn',         time:'6am – 9am or 5pm – 9pm', weather:'Rain · Drizzle · Fog'},
+        {id:'winyan_bison',    name:'Winyan Bison',         location:'Colter',           time:'9pm – 6am or DAY',       weather:'Clear'},
+        {id:'snow_buck',       name:'Snow Buck',            location:'Manzanita Post',   time:'5am – 10am or NIGHT',    weather:'Clear'},
+        {id:'iguga_cougar',    name:'Iguga Cougar',         location:'Blackwater',       time:'5pm – 9pm or NIGHT',     weather:'Storms'},
+        {id:'inahme_elk',      name:'Inahme Elk',           harriet:true},
+        {id:'moonstone_wolf',  name:'Moonstone Wolf',       harriet:true},
+        {id:'milk_coyote',     name:'Milk Coyote',          harriet:true},
+        {id:'gabbro_ram',      name:'Gabbro Horn Ram',      location:'Armadillo',        time:'5am – 5pm',              weather:'Clear'},
+      ]
+    },
+    {
+      id:'red_blond', label:'Red & Blond',
+      animals:[
+        {id:'sun_gator',       name:'Sun Gator',            location:'Lagras',           time:'6am – 9am or DAY',       weather:'Fog · Rain'},
+        {id:'banded_gator',    name:'Banded Gator',         harriet:true},
+        {id:'payta_bison',     name:'Payta Bison',          harriet:true},
+        {id:'wakpa_boar',      name:'Wakpa Boar',           location:'MacFarlane Ranch', time:'9am – 9pm or DAY',       weather:'Clear · Rain'},
+        {id:'redstreak_coyote',name:'Red Streak Coyote',    location:'MacFarlane Ranch', time:'9am – 6pm or DAY',       weather:'Clear · Rain'},
+        {id:'ozula_elk',       name:'Ozula Elk',            location:'Armadillo',        time:'6pm – 6am',              weather:'Any Weather'},
+        {id:'emerald_wolf',    name:'Emerald Wolf',         location:'Emerald Station',  time:'8pm – 8am',              weather:'Any Weather'},
+        {id:'zizi_beaver',     name:'Zizi Beaver',          location:'Strawberry',       time:'6am – 9am or 5pm – 9pm', weather:'Any Weather'},
+        {id:'cogi_boar',       name:'Cogi Boar',            location:'Van Horn',         time:'6am – 9am or DAY',       weather:'Clear'},
+      ]
+    },
+    {
+      id:'patterned', label:'Patterned',
+      animals:[
+        {id:'icachi_boar',     name:'Icachi Boar',          harriet:true},
+        {id:'mudrunner_buck',  name:'Mud Runner Buck',      location:'Valentine',        time:'9am – 9pm',              weather:'Clear'},
+        {id:'maza_cougar',     name:'Maza Cougar',          location:'Tumbleweed',       time:'6am – 9am or DAY',       weather:'Clear'},
+        {id:'ota_fox',         name:'Ota Fox',              location:'Rhodes',           time:'6am – 9am or 5pm – 9pm', weather:'Clear'},
+        {id:'marble_fox',      name:'Marble Fox',           location:'Colter',           time:'6am – 9am or 5pm – 9pm', weather:'Clear'},
+        {id:'cross_fox',       name:'Cross Fox',            harriet:true},
+        {id:'chalk_ram',       name:'Chalk Horn Ram',       location:'Wapiti',           time:'9am – 9pm',              weather:'Clear · Fog'},
+      ]
+    }
+  ];
+
+  const NAT_TOTAL_ANIMALS = NAT_CATEGORIES.reduce((n,c)=>n+c.animals.length,0);
+  const NAT_HARRIET_COUNT = NAT_CATEGORIES.reduce((n,c)=>n+c.animals.filter(a=>a.harriet).length,0);
+  const NAT_KEY = 'rdo-naturalist-v1';
+
+  let natState = {}; // {animal_id: [bool×7]}
+
+  function defaultNatState(){
+    const s = {};
+    NAT_CATEGORIES.forEach(cat => cat.animals.forEach(a => {
+      s[a.id] = new Array(NAT_ACTIONS.length).fill(false);
+    }));
+    return s;
+  }
+
+  async function loadNaturalist(){
+    natState = defaultNatState();
+    try{
+      const r = localStorage.getItem(NAT_KEY);
+      if(!r) throw new Error('Not found');
+      natState = Object.assign(defaultNatState(), JSON.parse(r));
+    }catch(e){}
+  }
+  async function saveNaturalist(){
+    try{ localStorage.setItem(NAT_KEY, JSON.stringify(natState)); }
+    catch(e){}
+  }
+
+  /* ============ RENDER: NATURALIST ============ */
+  const natWrap = document.getElementById('nat-categories');
+
+  function renderNaturalist(){
+    natWrap.innerHTML = '';
+    NAT_CATEGORIES.forEach(cat => {
+      const h = document.createElement('h2');
+      h.className = 'category';
+      h.textContent = cat.label;
+      natWrap.appendChild(h);
+      cat.animals.forEach(animal => natWrap.appendChild(renderNatCard(animal)));
+    });
+    updateNatSummary();
+  }
+
+  function renderNatCard(animal){
+    const flags = natState[animal.id];
+    const doneCt = flags.filter(Boolean).length;
+    const total  = NAT_ACTIONS.length;
+    const allDone= doneCt === total;
+
+    const card = document.createElement('div');
+    card.className = 'nat-card' + (allDone ? ' open' : '');
+    card.dataset.id = animal.id;
+
+    // --- Head ---
+    const head = document.createElement('div');
+    head.className = 'nat-head';
+
+    const info = document.createElement('div');
+    info.className = 'nat-info';
+
+    const h4 = document.createElement('h4');
+    h4.className = animal.harriet ? 'harriet-animal' : '';
+    h4.textContent = animal.name;
+    info.appendChild(h4);
+
+    const meta = document.createElement('div');
+    meta.className = 'nat-meta';
+
+    if(animal.harriet){
+      const b = document.createElement('span');
+      b.className = 'nat-badge harriet-badge';
+      b.textContent = '🌿 Harriet Pamphlet';
+      meta.appendChild(b);
+    } else {
+      const loc = document.createElement('span');
+      loc.className = 'nat-badge';
+      loc.textContent = '📍 ' + animal.location;
+      meta.appendChild(loc);
+
+      const time = document.createElement('span');
+      time.className = 'nat-badge';
+      time.textContent = '🕐 ' + animal.time;
+      meta.appendChild(time);
+
+      const wx = document.createElement('span');
+      wx.className = 'nat-badge';
+      wx.textContent = '☁️ ' + animal.weather;
+      meta.appendChild(wx);
+    }
+    info.appendChild(meta);
+
+    const progress = document.createElement('div');
+    progress.className = 'nat-progress';
+    const pips = document.createElement('div');
+    pips.className = 'nat-pips';
+    flags.forEach(f => {
+      const pip = document.createElement('div');
+      pip.className = 'nat-pip' + (f ? ' done' : '');
+      pips.appendChild(pip);
+    });
+    progress.appendChild(pips);
+
+    const chev = document.createElement('div');
+    chev.className = 'nat-chev';
+    chev.textContent = '⌄';
+
+    head.appendChild(info);
+    head.appendChild(progress);
+    head.appendChild(chev);
+    head.addEventListener('click', () => card.classList.toggle('open'));
+    card.appendChild(head);
+
+    // --- Body ---
+    const body = document.createElement('div');
+    body.className = 'nat-body';
+
+    const actRow = document.createElement('div');
+    actRow.className = 'nat-actions';
+    NAT_ACTIONS.forEach((actName, idx) => {
+      const chip = document.createElement('label');
+      chip.className = 'act-chip' + (actName === 'Killed' ? ' kill-chip' : '') + (flags[idx] ? ' done' : '');
+      chip.innerHTML = `<input type="checkbox" ${flags[idx] ? 'checked' : ''}> ${actName}`;
+      chip.querySelector('input').addEventListener('change', (e) => {
+        natState[animal.id][idx] = e.target.checked;
+        chip.classList.toggle('done', e.target.checked);
+        saveNaturalist();
+        refreshNatCard(card, animal);
+        updateNatSummary();
+      });
+      actRow.appendChild(chip);
+    });
+    body.appendChild(actRow);
+    card.appendChild(body);
+
+    return card;
+  }
+
+  function refreshNatCard(card, animal){
+    const flags = natState[animal.id];
+    const pips = card.querySelectorAll('.nat-pip');
+    pips.forEach((pip, i) => pip.classList.toggle('done', flags[i]));
+  }
+
+  function updateNatSummary(){
+    let doneAnimals = 0, doneActions = 0, harrietDone = 0;
+    const totalActions = NAT_TOTAL_ANIMALS * NAT_ACTIONS.length;
+    NAT_CATEGORIES.forEach(cat => cat.animals.forEach(a => {
+      const flags = natState[a.id];
+      const ct = flags.filter(Boolean).length;
+      doneActions += ct;
+      if(ct === NAT_ACTIONS.length){
+        doneAnimals++;
+        if(a.harriet) harrietDone++;
+      }
+    }));
+    document.getElementById('nat-total').textContent   = `${doneAnimals}/${NAT_TOTAL_ANIMALS}`;
+    document.getElementById('nat-actions').textContent = `${doneActions}/${totalActions}`;
+    document.getElementById('nat-harriet').textContent = `${harrietDone}/${NAT_HARRIET_COUNT}`;
+    document.getElementById('nat-pct').textContent     = `${Math.round(doneActions/totalActions*100)}%`;
+  }
+
+  /* ============ MOONSHINER DATA ============ */
+  // Brew times in seconds per strength [weak, average, strong]
+  // Default (pre Rank 15): 30, 45, 60 min
+  // Master Distiller (Rank 15): 24, 36, 48 min
+  const BREW_TIMES = {
+    default: { weak:1800, average:2700, strong:3600 },
+    rank15:  { weak:1440, average:2160, strong:2880 },
+  };
+  const SELL_VALUES = { weak:'$206.25', average:'$226.87', strong:'$247.50' };
+
+  // Ingredient sources: 'buy'=catalogue, 'nazar'=Madam Nazar, 'wild'=forage, 'loot'=loot moonshiners
+  const RECIPES = [
+    {
+      id:'wild_creek', name:'Wild Creek Moonshine', stars:3, sell:'$247.50',
+      unlock:'Role Rank 6',
+      ingredients:[
+        {name:'Wild Mint',    src:'nazar', tip:'Buy from Madam Nazar'},
+        {name:'Vanilla Flower', src:'wild', tip:'Forage in swamp — NOT sold by Nazar'},
+        {name:'Creek Plum',   src:'wild',  tip:'Forage in the wild or loot moonshiners'},
+      ]
+    },
+    {
+      id:'spiced_island', name:'Spiced Island Moonshine', stars:3, sell:'$247.50',
+      unlock:'Role Rank 12',
+      ingredients:[
+        {name:'Canned Apricots', src:'buy',  tip:'Buy from catalogue'},
+        {name:'Golden Currant',  src:'nazar',tip:'Buy from Madam Nazar'},
+        {name:'Caribbean Rum',   src:'loot', tip:'Loot from moonshiners or buy from catalogue'},
+      ]
+    },
+    {
+      id:'agarita', name:'Agarita Sunrise Moonshine', stars:3, sell:'$247.50',
+      unlock:'Complete all 5 story missions',
+      ingredients:[
+        {name:'Canned Strawberries', src:'buy',  tip:'Buy from catalogue'},
+        {name:'Evergreen Huckleberry', src:'wild',tip:'Forage in the wild'},
+        {name:'Agarita',             src:'wild', tip:'Forage — spawns near fences & rockfaces. Only between 10pm–5am!'},
+      ]
+    },
+    {
+      id:'poison_poppy', name:"Poison Poppy's Moonshine", stars:3, sell:'$247.50',
+      unlock:'Random event — find pamphlet chest in hostile moonshiner camp',
+      ingredients:[
+        {name:'Prairie Poppy',   src:'nazar', tip:'Buy from Madam Nazar'},
+        {name:'Absinthe',        src:'loot',  tip:'Loot from moonshiners'},
+        {name:'Oleander Sage',   src:'nazar', tip:'Buy from Madam Nazar — toxic plant, don\'t eat it'},
+      ]
+    },
+    {
+      id:'berry_cobbler', name:'Berry Cobbler Moonshine', stars:2, sell:'$226.87',
+      unlock:'Role Rank 2',
+      ingredients:[
+        {name:'Canned Peaches', src:'buy',  tip:'Buy from catalogue'},
+        {name:'Raspberry',      src:'wild', tip:'Forage — common in New Hanover'},
+        {name:'Peach',          src:'buy',  tip:'Buy from catalogue'},
+      ]
+    },
+    {
+      id:'apple_berry', name:'Apple Berry Crumb Moonshine', stars:2, sell:'$226.87',
+      unlock:'Complete story mission 3/5 (boat defense)',
+      ingredients:[
+        {name:'Apple',          src:'buy',  tip:'Buy from catalogue'},
+        {name:'Blackberry',     src:'wild', tip:'Forage in the wild — can also loot moonshiners'},
+        {name:'Vanilla Flower', src:'wild', tip:'Forage in swamp — NOT sold by Nazar'},
+      ]
+    },
+    {
+      id:'evergreen', name:'Evergreen Moonshine', stars:2, sell:'$226.87',
+      unlock:'Available from the start',
+      ingredients:[
+        {name:'Evergreen Huckleberry', src:'wild', tip:'Forage in the wild'},
+        {name:'Wintergreen Berry',     src:'wild', tip:'Forage in the wild'},
+        {name:'Ginseng',               src:'nazar',tip:'Buy from Madam Nazar'},
+      ]
+    },
+    {
+      id:'berry_mint', name:'Berry Mint Moonshine', stars:1, sell:'$206.25',
+      unlock:'Available from the start',
+      ingredients:[
+        {name:'Canned Strawberries', src:'buy',  tip:'Buy from catalogue'},
+        {name:'Blackberry',          src:'wild', tip:'Forage in the wild — common in forests'},
+        {name:'Wild Mint',           src:'nazar',tip:'Buy from Madam Nazar'},
+      ]
+    },
+    {
+      id:'tropical_punch', name:'Tropical Punch Moonshine', stars:1, sell:'$206.25',
+      unlock:'Available from the start',
+      ingredients:[
+        {name:'Canned Pineapples', src:'buy',   tip:'Buy from catalogue'},
+        {name:'Pear',              src:'buy',   tip:'Buy from catalogue'},
+        {name:'Vanilla Flower',    src:'wild',  tip:'Forage in swamp — NOT sold by Nazar'},
+      ]
+    },
+    {
+      id:'wild_cider', name:'Wild Cider Moonshine', stars:1, sell:'$206.25',
+      unlock:'Available from the start — easiest recipe, all buyable',
+      ingredients:[
+        {name:'Apple',   src:'buy',   tip:'Buy from catalogue'},
+        {name:'Ginseng', src:'nazar', tip:'Buy from Madam Nazar'},
+        {name:'Currant', src:'nazar', tip:'Buy from Madam Nazar'},
+      ]
+    },
+  ];
+
+  const MOON_KEY = 'rdo-moonshiner-v1';
+  let moonState = { run: null }; // run: { startEpoch, strength, rank15 }
+  let moonInterval = null;
+
+  async function loadMoonshiner(){
+    try{
+      const r = localStorage.getItem(MOON_KEY);
+      if(!r) throw new Error('Not found');
+      moonState = Object.assign({run:null}, JSON.parse(r));
+    }catch(e){ moonState = {run:null}; }
+  }
+  async function saveMoonshiner(){
+    try{ localStorage.setItem(MOON_KEY, JSON.stringify(moonState)); }
+    catch(e){}
+  }
+
+  /* ============ RENDER: MOONSHINER ============ */
+  function renderMoonshiner(){
+    renderMoonRecipes();
+    updateBrewPreview();
+
+    // Restore timer if one was running
+    if(moonState.run) {
+      showMoonActive();
+      startMoonInterval();
+    }
+
+    // Strength segment
+    document.querySelectorAll('.seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateBrewPreview();
+      });
+    });
+    document.getElementById('moon-rank15').addEventListener('change', updateBrewPreview);
+    document.getElementById('moon-start-btn').addEventListener('click', startBrew);
+    document.getElementById('moon-reset-btn').addEventListener('click', cancelBrew);
+  }
+
+  function getSelectedStrength(){
+    const active = document.querySelector('.seg-btn.active');
+    return active ? active.dataset.strength : 'strong';
+  }
+
+  function updateBrewPreview(){
+    const strength = getSelectedStrength();
+    const rank15 = document.getElementById('moon-rank15').checked;
+    const times = rank15 ? BREW_TIMES.rank15 : BREW_TIMES.default;
+    const secs = times[strength];
+    const mins = secs / 60;
+    document.getElementById('moon-preview-time').textContent = `${mins} min`;
+    document.getElementById('moon-preview-sell').textContent = `up to ${SELL_VALUES[strength]} (large delivery)`;
+  }
+
+  function startBrew(){
+    const strength = getSelectedStrength();
+    const rank15 = document.getElementById('moon-rank15').checked;
+    moonState.run = { startEpoch: Date.now(), strength, rank15 };
+    saveMoonshiner();
+    showMoonActive();
+    startMoonInterval();
+  }
+
+  function cancelBrew(){
+    clearInterval(moonInterval); moonInterval = null;
+    moonState.run = null;
+    saveMoonshiner();
+    resetMoonUI();
+    document.getElementById('moon-idle').classList.remove('hidden');
+    document.getElementById('moon-active').classList.add('hidden');
+  }
+
+  function showMoonActive(){
+    document.getElementById('moon-idle').classList.add('hidden');
+    document.getElementById('moon-active').classList.remove('hidden');
+    const r = moonState.run;
+    const label = r.strength.charAt(0).toUpperCase() + r.strength.slice(1);
+    document.getElementById('moon-active-label').textContent = `${label}${r.rank15 ? ' ✓R15' : ''}`;
+    document.getElementById('moon-active-sell').textContent = `up to ${SELL_VALUES[r.strength]}`;
+  }
+
+  function startMoonInterval(){
+    if(moonInterval) clearInterval(moonInterval);
+    moonInterval = setInterval(tickMoon, 1000);
+    tickMoon();
+  }
+
+  function tickMoon(){
+    const r = moonState.run;
+    if(!r) return;
+    const times = r.rank15 ? BREW_TIMES.rank15 : BREW_TIMES.default;
+    const totalSecs = times[r.strength];
+    const elapsed = Math.floor((Date.now() - r.startEpoch) / 1000);
+    const remaining = Math.max(0, totalSecs - elapsed);
+    const pct = Math.min(100, elapsed / totalSecs * 100);
+
+    document.getElementById('moon-cd').textContent = fmtHMS(remaining);
+    document.getElementById('moon-fill').style.width = pct + '%';
+
+    if(remaining === 0){
+      document.getElementById('moon-cd-sub').textContent = 'Ready to deliver!';
+      document.getElementById('moon-done-alert').classList.remove('hidden');
+      clearInterval(moonInterval); moonInterval = null;
+    } else {
+      const etaMs = r.startEpoch + totalSecs * 1000;
+      const etaStr = new Date(etaMs).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      document.getElementById('moon-cd-sub').textContent = `Ready at ${etaStr}`;
+    }
+  }
+
+  function resetMoonUI(){
+    document.getElementById('moon-cd').textContent = '00:00:00';
+    document.getElementById('moon-cd-sub').textContent = 'Brewing…';
+    document.getElementById('moon-fill').style.width = '0%';
+    document.getElementById('moon-done-alert').classList.add('hidden');
+  }
+
+  function renderMoonRecipes(){
+    const wrap = document.getElementById('moon-recipes');
+    wrap.innerHTML = '';
+    RECIPES.forEach(recipe => {
+      const card = document.createElement('div');
+      card.className = 'recipe-card';
+
+      const stars = '★'.repeat(recipe.stars) + '☆'.repeat(3 - recipe.stars);
+      const starColor = recipe.stars === 3 ? '#d4a017' : recipe.stars === 2 ? '#b8924a' : '#8a7040';
+
+      const head = document.createElement('div');
+      head.className = 'recipe-head';
+      head.innerHTML = `
+        <div class="recipe-stars" style="color:${starColor};">${stars}</div>
+        <div class="recipe-titles">
+          <h4>${recipe.name}</h4>
+          <div class="recipe-sell">${recipe.sell} · large delivery all jars intact</div>
+          <div class="recipe-unlock">🔓 ${recipe.unlock}</div>
+        </div>
+        <div class="recipe-chev">⌄</div>
+      `;
+      head.addEventListener('click', () => card.classList.toggle('open'));
+      card.appendChild(head);
+
+      const body = document.createElement('div');
+      body.className = 'recipe-body';
+
+      const ingList = document.createElement('div');
+      ingList.className = 'ingredient-list';
+      recipe.ingredients.forEach(ing => {
+        const srcColors = {buy:'#5c6e4f', nazar:'#b8924a', wild:'#c17b32', loot:'#9c3b2e'};
+        const srcLabels = {buy:'Catalogue', nazar:'Madam Nazar', wild:'Forage', loot:'Loot'};
+        const row = document.createElement('div');
+        row.className = 'ingredient-row';
+        row.innerHTML = `
+          <div class="ing-dot" style="background:${srcColors[ing.src]};"></div>
+          <span class="ing-name">${ing.name}</span>
+          <span class="ing-source">${srcLabels[ing.src]} — ${ing.tip}</span>
+        `;
+        ingList.appendChild(row);
+      });
+      body.appendChild(ingList);
+
+      const legend = document.createElement('div');
+      legend.className = 'source-legend';
+      legend.innerHTML = `
+        <span class="src-leg"><span class="src-leg-dot" style="background:#5c6e4f;"></span>Catalogue</span>
+        <span class="src-leg"><span class="src-leg-dot" style="background:#b8924a;"></span>Madam Nazar</span>
+        <span class="src-leg"><span class="src-leg-dot" style="background:#c17b32;"></span>Forage wild</span>
+        <span class="src-leg"><span class="src-leg-dot" style="background:#9c3b2e;"></span>Loot moonshiners</span>
+      `;
+      body.appendChild(legend);
+      card.appendChild(body);
+      wrap.appendChild(card);
+    });
+  }
+
+  /* ============ BOUNTY COOLDOWN TIMERS ============ */
+  const BH_CD_SECS = 48 * 60; // 48 minutes — covers all bounty types
+  let bhLegInterval = null;
+
+  function initBhTimers(){
+    document.getElementById('bh-leg-start').addEventListener('click', () => {
+      bhState.legCooldownStart = Date.now();
+      saveBounty();
+      showBhTimer('leg');
+      startBhInterval('leg');
+    });
+    document.getElementById('bh-leg-reset').addEventListener('click', () => {
+      clearInterval(bhLegInterval); bhLegInterval = null;
+      bhState.legCooldownStart = null;
+      saveBounty();
+      resetBhTimer('leg');
+    });
+    // Restore on load
+    if(bhState.legCooldownStart){ showBhTimer('leg'); startBhInterval('leg'); }
+  }
+
+  function showBhTimer(type){
+    document.getElementById(`bh-${type}-idle`).classList.add('hidden');
+    document.getElementById(`bh-${type}-active`).classList.remove('hidden');
+  }
+
+  function resetBhTimer(type){
+    document.getElementById(`bh-${type}-idle`).classList.remove('hidden');
+    document.getElementById(`bh-${type}-active`).classList.add('hidden');
+    document.getElementById(`bh-${type}-cd`).textContent = '48:00';
+    document.getElementById(`bh-${type}-fill`).style.width = '0%';
+    document.getElementById(`bh-${type}-done`).classList.add('hidden');
+    document.getElementById('bh-leg-status').textContent = 'On Cooldown';
+    document.getElementById('bh-leg-sub').textContent = 'Next bounty available at —';
+  }
+
+  function startBhInterval(type){
+    if(bhLegInterval) clearInterval(bhLegInterval);
+    bhLegInterval = setInterval(() => tickBhTimer(type), 1000);
+    tickBhTimer(type);
+  }
+
+  function tickBhTimer(type){
+    const start = bhState.legCooldownStart;
+    if(!start) return;
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    const remaining = Math.max(0, BH_CD_SECS - elapsed);
+    const pct = Math.min(100, elapsed / BH_CD_SECS * 100);
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    document.getElementById('bh-leg-cd').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.getElementById('bh-leg-fill').style.width = pct + '%';
+    const unlockTime = new Date(start + BH_CD_SECS * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    if(remaining === 0){
+      document.getElementById('bh-leg-done').classList.remove('hidden');
+      document.getElementById('bh-leg-status').textContent = '✓ Ready!';
+      document.getElementById('bh-leg-sub').textContent = 'Bounties available now!';
+      clearInterval(bhLegInterval); bhLegInterval = null;
+    } else {
+      document.getElementById('bh-leg-status').textContent = 'On Cooldown';
+      document.getElementById('bh-leg-sub').textContent = 'Board available at ' + unlockTime;
+    }
+  }
+
+  /* ============ BOUNTY HUNTER DATA ============ */
+  const BOUNTIES = [
+    // ── Standard (10) ──
+    {
+      id:'barbarella', name:'Barbarella Alcazar', alias:'"The Bandit Queen"',
+      location:'Gaptooth Breach, New Austin', payout:100, prestigious:false,
+      tip:'Del Lobo Gang leader holed up in the mine. Go in hot or flank via the roof.'
+    },
+    {
+      id:'wolf_man', name:'The Wolf Man', alias:'Unknown — lives with wolves',
+      location:'Lake Isabella, Ambarino', payout:100, prestigious:false,
+      tip:'Must be taken alive. Kill the grizzly bear first or it will kill him for you.'
+    },
+    {
+      id:'owlhoot', name:'The Owlhoot Family', alias:'Four targets, one bounty',
+      location:'Rio Bravo camps, New Austin', payout:125, prestigious:false,
+      tip:'4 separate targets spread across the area. Bounty wagon strongly recommended.'
+    },
+    {
+      id:'sergio', name:'Sergio Vincenza', alias:'Military Sniper',
+      location:'East New Hanover (Fort Brennand area)', payout:125, prestigious:false,
+      tip:'Take cover constantly — watch for the sniper glint. Rush the tower to close the distance.'
+    },
+    {
+      id:'cecil', name:'Cecil C. Tucker', alias:'Disgraced Officer',
+      location:'Fort Brennand, Lemoyne', payout:100, prestigious:false,
+      tip:'Clear the fort then survive waves of Lemoyne Raiders while waiting for Tucker to appear.'
+    },
+    {
+      id:'philip', name:'Philip Carlier', alias:'The Night Folk Man',
+      location:'Lagras Swamp, near Saint Denis', payout:125, prestigious:false,
+      tip:'You will be drugged into a hallucination — fight through it. Must be taken alive.'
+    },
+    {
+      id:'tobin', name:'Tobin Winfield', alias:'The Corrupt Mayor',
+      location:'Thieves Landing / Flat Iron Lake area', payout:150, prestigious:false,
+      tip:'He surrenders immediately — your job is to PROTECT him through ambushes. Take a posse.'
+    },
+    {
+      id:'etta', name:'Etta Doyle', alias:'Gang Leader',
+      location:'Southwest of Saint Denis', payout:150, prestigious:false,
+      tip:'High payout. Fast mission if you go in aggressive. One of the best farms at 5 star.'
+    },
+    {
+      id:'red_ben', name:'Red Ben Clempson', alias:'Train Robber',
+      location:'Moving train, Lemoyne', payout:150, prestigious:false,
+      tip:'Multiple targets on a moving train. Hogtie and throw off, then move carriage to carriage.'
+    },
+    {
+      id:'yukon', name:'"Yukon" Nikoli Borodin', alias:'Gold Rush Outlaw',
+      location:'Grizzlies / Ambarino', payout:125, prestigious:false,
+      tip:'Cold weather gear recommended. Multiple armed escorts in rough terrain.'
+    },
+    // ── Prestigious License Required (3) ──
+    {
+      id:'gene', name:'Gene "Beau" Finley', alias:'Conman',
+      location:'Flat Iron Lake region', payout:125, prestigious:true,
+      tip:'Prestigious License required. Slippery target — stays on the move.'
+    },
+    {
+      id:'carmela', name:'Carmela "La Muñeca" Montez', alias:'Cartel Leader',
+      location:'New Austin / Del Lobo territory', payout:150, prestigious:true,
+      tip:'Prestigious License required. High difficulty, heavily guarded.'
+    },
+    {
+      id:'virgil', name:'Virgil "The Shepherd" Edwards', alias:'Cult Leader',
+      location:'Roanoke Ridge / Annesburg cave', payout:150, prestigious:true,
+      tip:'Prestigious License required. Wears heavy armour — use explosives to strip it first. Best boss fight in RDO.'
+    },
+  ];
+
+  const BH_KEY = 'rdo-bounty-v1';
+  let bhState = {}; // { bounty_id: starsCompleted (0-5), legCooldownStart }
+
+  async function loadBounty(){
+    bhState = { legCooldownStart: null };
+    BOUNTIES.forEach(b => { bhState[b.id] = 0; });
+    try{
+      const r = localStorage.getItem(BH_KEY);
+      if(!r) throw new Error('Not found');
+      bhState = Object.assign(bhState, JSON.parse(r));
+    }catch(e){}
+  }
+  async function saveBounty(){
+    try{ localStorage.setItem(BH_KEY, JSON.stringify(bhState)); }
+    catch(e){}
+  }
+
+  /* ============ RENDER: BOUNTY HUNTER ============ */
+  function renderBounty(){
+    const stdWrap  = document.getElementById('bh-standard');
+    const presWrap = document.getElementById('bh-prestigious');
+    stdWrap.innerHTML = '';
+    presWrap.innerHTML = '';
+
+    BOUNTIES.forEach(b => {
+      const card = buildBountyCard(b);
+      (b.prestigious ? presWrap : stdWrap).appendChild(card);
+    });
+    updateBhSummary();
+    initBhTimers();
+  }
+
+  function buildBountyCard(b){
+    const stars = bhState[b.id] || 0;
+    const card = document.createElement('div');
+    card.className = 'bounty-card' + (b.prestigious ? ' prestigious' : '') + (stars === 5 ? ' all-done' : '');
+    card.dataset.id = b.id;
+
+    const inner = document.createElement('div');
+    inner.className = 'bounty-inner';
+
+    // Info block
+    const info = document.createElement('div');
+    info.className = 'bounty-info';
+    info.innerHTML = `
+      <h4>${b.name}</h4>
+      <div class="bounty-alias">${b.alias}</div>
+      <div class="bounty-meta">
+        <span class="bounty-badge">📍 ${b.location}</span>
+        <span class="bounty-badge payout">💰 $${b.payout}</span>
+        ${b.prestigious ? '<span class="bounty-badge prestige">★ Prestigious License</span>' : ''}
+      </div>
+      <div style="font-size:11px;color:#5a4a30;margin-top:4px;font-style:italic;">${b.tip}</div>
+    `;
+    inner.appendChild(info);
+
+    // Star control
+    const starCtrl = document.createElement('div');
+    starCtrl.className = 'star-control';
+    for(let i = 1; i <= 5; i++){
+      const btn = document.createElement('button');
+      btn.className = 'star-btn' + (i <= stars ? (stars === 5 ? ' lit-5' : ' lit') : '');
+      btn.textContent = '★';
+      btn.title = `Mark ${i}-star complete`;
+      btn.addEventListener('click', () => {
+        // Clicking the current top star toggles it off; clicking any other sets that level
+        const current = bhState[b.id] || 0;
+        bhState[b.id] = (current === i) ? i - 1 : i;
+        saveBounty();
+        refreshBountyCard(card, b);
+        updateBhSummary();
+      });
+      starCtrl.appendChild(btn);
+    }
+    inner.appendChild(starCtrl);
+    card.appendChild(inner);
+    return card;
+  }
+
+  function refreshBountyCard(card, b){
+    const stars = bhState[b.id] || 0;
+    card.classList.toggle('all-done', stars === 5);
+    const btns = card.querySelectorAll('.star-btn');
+    btns.forEach((btn, idx) => {
+      const i = idx + 1;
+      btn.className = 'star-btn' + (i <= stars ? (stars === 5 ? ' lit-5' : ' lit') : '');
+    });
+  }
+
+  function updateBhSummary(){
+    let fiveStar = 0, totalStars = 0, totalPayout = 0;
+    const maxStars = BOUNTIES.length * 5;
+    BOUNTIES.forEach(b => {
+      const s = bhState[b.id] || 0;
+      totalStars += s;
+      totalPayout += s * b.payout;
+      if(s === 5) fiveStar++;
+    });
+    document.getElementById('bh-five-star').textContent = `${fiveStar}/${BOUNTIES.length}`;
+    document.getElementById('bh-stars').textContent    = `${totalStars}/${maxStars}`;
+    document.getElementById('bh-payout').textContent   = `$${totalPayout.toLocaleString()}`;
+    document.getElementById('bh-pct').textContent      = `${Math.round(totalStars / maxStars * 100)}%`;
+  }
+
+  /* ============ FILTER TOGGLE ============ */
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewMode = btn.dataset.mode;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+      // Rebuild each set card's body in place, preserving open/closed state
+      SETS.forEach(set => {
+        const card = catWrap.querySelector(`.set-card[data-id="${set.id}"]`);
+        if(!card) return;
+        const body = card.querySelector('.set-body');
+        body.innerHTML = '';
+        body.appendChild(buildSetBodyInner(set));
+      });
+    });
+  });
+
+  /* ============ TABS ============ */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ============ COUNTDOWNS ============ */
+  function nextUtc(hour){
+    const now = new Date();
+    const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hour, 0, 0));
+    if(t <= now) t.setUTCDate(t.getUTCDate() + 1);
+    return t;
+  }
+  function fmtDuration(ms){
+    let s = Math.floor(ms/1000);
+    const h = Math.floor(s/3600); s -= h*3600;
+    const m = Math.floor(s/60); s -= m*60;
+    return [h,m,s].map(n => String(n).padStart(2,'0')).join(':');
+  }
+  function tickCountdowns(){
+    const reset = nextUtc(0);
+    const nazar = nextUtc(6);
+    document.getElementById('cd-reset').textContent = fmtDuration(reset - new Date());
+    document.getElementById('cd-nazar').textContent = fmtDuration(nazar - new Date());
+    document.getElementById('cd-reset-local').textContent =
+      'resets daily at 00:00 UTC — ' + reset.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' your time';
+    document.getElementById('cd-nazar-local').textContent =
+      'moves daily at 06:00 UTC — ' + nazar.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' your time';
+  }
+  setInterval(tickCountdowns, 1000);
+
+  /* ============ INIT ============ */
+  async function init(){
+    collectorState = defaultCollectorState();
+    await loadCollector();
+    await loadTrader();
+    await loadNaturalist();
+    await loadMoonshiner();
+    await loadBounty();
+    renderCollector();
+    renderTrader();
+    renderNaturalist();
+    renderMoonshiner();
+    renderBounty();
+    tickCountdowns();
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>

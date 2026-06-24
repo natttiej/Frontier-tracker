@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Last Frontier — RDO Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Vollkorn:ital,wght@0,400;0,600&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:radial-gradient(ellipse at top, #3a2917 0%, #1b120c 55%, #100b07 100%);
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'Vollkorn',serif;
+  padding:32px 16px;
+}
+.banner{text-align:center;margin-bottom:48px;}
+.eyebrow{
+  font-family:'Special Elite',monospace;
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:#b8924a;margin-bottom:12px;
+}
+h1{
+  font-family:'Rye',cursive;
+  font-size:clamp(32px,10vw,56px);
+  color:#d8b876;
+  text-shadow:2px 3px 0 #000, 0 0 30px rgba(184,146,74,0.2);
+  margin-bottom:10px;
+}
+.subtitle{
+  font-style:italic;
+  color:#dccaa0;
+  font-size:clamp(14px,3vw,18px);
+  opacity:0.8;
+}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+  width:100%;
+  max-width:700px;
+}
+.card{
+  background:#ece0c3;
+  border-radius:14px;
+  padding:28px 24px;
+  text-align:center;
+  text-decoration:none;
+  color:#2a1c10;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.1);
+  border:2px solid #b8924a;
+  transition:transform .15s, box-shadow .15s;
+}
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 40px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+.card-icon{font-size:40px;margin-bottom:14px;display:block;}
+.card h2{
+  font-family:'Rye',cursive;
+  font-size:22px;
+  color:#7c2c22;
+  margin-bottom:8px;
+}
+.card p{
+  font-size:13px;
+  color:#5a4a30;
+  line-height:1.6;
+}
+.card .roles{
+  display:flex;flex-wrap:wrap;gap:5px;justify-content:center;
+  margin-top:14px;
+}
+.role{
+  font-family:'Special Elite',monospace;
+  font-size:10px;
+  letter-spacing:.5px;
+  padding:3px 8px;
+  border-radius:5px;
+  background:#dccaa0;
+  border:1px solid #c9b384;
+  color:#5a4a30;
+}
+footer{
+  margin-top:40px;
+  font-family:'Special Elite',monospace;
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:#b8924a;
+  opacity:.5;
+  text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="banner">
+  <div class="eyebrow">Established 1899 · Frontier Pursuits</div>
+  <h1>The Last Frontier</h1>
+  <p class="subtitle">Out here, the quiet ones leave the biggest mark.</p>
+</div>
+
+<div class="cards">
+  <a class="card" href="rdo-ledger.html">
+    <span class="card-icon">📒</span>
+    <h2>The Ledger</h2>
+    <p>Track collectibles, timers, bounties, moonshine, and your naturalist progress all in one place.</p>
+    <div class="roles">
+      <span class="role">Collector</span>
+      <span class="role">Trader</span>
+      <span class="role">Naturalist</span>
+      <span class="role">Moonshiner</span>
+      <span class="role">Bounty Hunter</span>
+    </div>
+  </a>
+  <a class="card" href="rdo-map.html">
+    <span class="card-icon">🗺️</span>
+    <h2>Spawn Map</h2>
+    <p>Live collectible spawn locations cross-referenced from Jean Ropke's map. Record your own pins as you play.</p>
+    <div class="roles">
+      <span class="role">Today's Cycle</span>
+      <span class="role">All 17 Sets</span>
+      <span class="role">Custom Pins</span>
+    </div>
+  </a>
+</div>
+
+<footer>Progress saved locally in your browser · No account needed</footer>
+</body>
+</html>
