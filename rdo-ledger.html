@@ -589,6 +589,27 @@
   .run-actions{margin-top:6px;}
   .run-start-btn{width:100%;}
 
+  /* ── Trader independent timers ── */
+  .t-watch-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:10px;
+  }
+  .t-digits{
+    font-family:'Special Elite',monospace;
+    font-size:clamp(28px,8vw,38px);
+    letter-spacing:2px;
+    color:var(--ink);
+  }
+  .t-digits.urgent{color:var(--rust-dark);animation:tpulse 1s ease infinite;}
+  @keyframes tpulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .t-actions{display:flex;gap:7px;flex-shrink:0;}
+  .t-bar-track{
+    height:10px;background:var(--paper-dark);border-radius:6px;overflow:hidden;
+    border:1px solid var(--paper-edge);margin-bottom:8px;
+  }
+  .t-bar-fill{height:100%;background:linear-gradient(90deg,var(--rust),var(--brass));border-radius:6px;transition:width .5s linear;}
+  .t-bar-wagon{background:linear-gradient(90deg,var(--sage),var(--brass-light));}
+
   /* ============ NATURALIST ============ */
   .nat-card{
     background:var(--paper);
@@ -916,6 +937,27 @@
     pointer-events:none;
   }
 
+  /* ── Toast notification ── */
+  #app-toast{
+    position:fixed;
+    bottom:24px;left:50%;
+    transform:translateX(-50%) translateY(80px);
+    background:var(--leather-2);
+    color:var(--brass-light);
+    border:1px solid var(--brass);
+    border-radius:9px;
+    padding:11px 20px;
+    font-family:'Special Elite',monospace;
+    font-size:13px;
+    letter-spacing:.4px;
+    z-index:9999;
+    pointer-events:none;
+    transition:transform .3s ease;
+    white-space:nowrap;
+    box-shadow:0 4px 18px rgba(0,0,0,.5);
+  }
+  #app-toast.show{transform:translateX(-50%) translateY(0);}
+
   footer{
     max-width:720px;margin:24px auto 0;padding:14px 18px 4px;
     font-size:11px;color:var(--paper-dark);text-align:center;line-height:1.6;
@@ -978,112 +1020,61 @@
   <!-- ============= TRADER PANEL ============= -->
   <div class="panel" id="panel-trader">
 
-    <!-- Production Run Timer -->
-    <div class="block" id="trader-run-block">
-      <h3>Production Run</h3>
-
-      <!-- STATE 1: Idle — buy initial supplies first -->
-      <div class="run-status" id="run-status-idle">
-        <p class="note" style="margin:0 0 10px;">Cripps needs supplies before he can start. Purchase them first — delivery takes 10 minutes before production begins.</p>
-        <button class="btn" id="run-presupply-btn" style="width:100%;">💰 Resupply #1 — Purchase Initial Supplies ($20)</button>
-      </div>
-
-      <!-- STATE 2: Pre-production delivery — waiting for initial supplies -->
-      <div class="run-status hidden" id="run-status-predelivery">
-        <div class="alert-box alert-delivery" style="margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <strong>📦 Resupply #1 on the way…</strong>
-            <span class="run-digits" id="cd-predelivery" style="font-size:20px;">10:00</span>
-          </div>
-          <div style="height:8px;background:rgba(0,0,0,0.1);border-radius:4px;overflow:hidden;">
-            <div id="predelivery-fill" style="height:100%;background:var(--brass);width:0%;transition:width 1s linear;"></div>
-          </div>
-          <div style="font-size:11px;margin-top:5px;opacity:0.8;">Cripps will start automatically when supplies arrive.</div>
-        </div>
-        <button class="btn ghost" id="run-precancel-btn" style="width:100%;">✕ Cancel</button>
-      </div>
-
-      <!-- STATE 3: Active — Cripps is working -->
-      <div class="run-status hidden" id="run-status-active">
-        <div class="run-grid">
-          <div class="run-watch">
-            <div class="eyebrow">Next Resupply In</div>
-            <div class="run-digits" id="cd-resupply">00:50:00</div>
-            <div class="run-sub" id="resupply-label">Resupply #2 due at 25 goods</div>
-          </div>
-          <div class="run-watch">
-            <div class="eyebrow">Full Wagon In</div>
-            <div class="run-digits" id="cd-wagon">03:20:00</div>
-            <div class="run-sub">100 goods @ 2 min each</div>
-          </div>
-        </div>
-
-        <div class="goods-display">
-          <div class="goods-row">
-            <span class="goods-label">Goods produced</span>
-            <span class="goods-big" id="run-goods">0 <span class="goods-of">/ 100</span></span>
-          </div>
-          <div class="wagon-track">
-            <div class="wagon-fill" id="wagon-fill" style="width:0%"></div>
-            <div class="resupply-markers">
-              <div class="resupply-mark" style="left:25%" title="Resupply #2 at 25 goods"></div>
-              <div class="resupply-mark" style="left:50%" title="Resupply #3 at 50 goods"></div>
-              <div class="resupply-mark" style="left:75%" title="Resupply #4 at 75 goods"></div>
-            </div>
-          </div>
-          <div class="resupply-strip" id="resupply-strip">
-            <span class="rs-chip done" id="rs-1">✓ Resupply #1</span>
-            <span class="rs-chip" id="rs-2">Resupply #2</span>
-            <span class="rs-chip" id="rs-3">Resupply #3</span>
-            <span class="rs-chip" id="rs-4">Resupply #4</span>
-          </div>
-        </div>
-
-        <div class="alert-box hidden" id="resupply-alert">
-          ⚠️ <strong>Resupply needed!</strong> Cripps is about to run dry.
-          <button class="btn" id="resupply-done-btn" style="margin-top:8px;display:block;width:100%">💰 Purchased supplies ($20) — start 10 min delivery</button>
-        </div>
-
-        <div class="alert-box alert-delivery hidden" id="delivery-alert">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <strong>📦 Supplies on the way…</strong>
-            <span class="run-digits" id="cd-delivery" style="font-size:20px;">10:00</span>
-          </div>
-          <div style="height:8px;background:rgba(0,0,0,0.1);border-radius:4px;overflow:hidden;">
-            <div id="delivery-fill" style="height:100%;background:var(--brass);width:0%;transition:width 1s linear;"></div>
-          </div>
-          <div style="font-size:11px;margin-top:5px;opacity:0.8;">Production resumes automatically when supplies arrive.</div>
-        </div>
-
-        <div class="spend-tally" id="spend-tally">
-          <span class="tally-label">Total resupply spend this run:</span>
-          <span class="tally-val" id="tally-val">$20</span>
-        </div>
-
-        <div class="alert-box alert-done hidden" id="wagon-alert">
-          🎉 <strong>Wagon is full!</strong> 100 goods ready. Head to a delivery point while the iron's hot.
-        </div>
-
-        <div class="run-actions">
-          <button class="btn ghost" id="run-reset-btn">✕ End run &amp; reset</button>
+    <!-- TIMER 1: Resupply Delivery -->
+    <div class="block">
+      <h3>Resupply Delivery</h3>
+      <p class="note" style="margin-bottom:10px;">10-minute delivery countdown. Alarms at 1 minute remaining.</p>
+      <div class="t-watch-row">
+        <div class="t-digits urgent-flash" id="t1-digits">10:00</div>
+        <div class="t-actions">
+          <button class="btn" id="t1-start">▶ Start</button>
+          <button class="btn ghost" id="t1-reset">Reset</button>
         </div>
       </div>
+      <div class="t-bar-track"><div class="t-bar-fill" id="t1-fill" style="width:0%"></div></div>
+      <div class="alert-box hidden" id="t1-alarm">⚠️ <strong>Supplies arriving in under 1 minute!</strong></div>
+      <div class="alert-box alert-done hidden" id="t1-done">📦 <strong>Supplies delivered!</strong> Cripps is back to work.</div>
     </div>
 
-    <!-- Best Materials -->
+    <!-- TIMER 2: Cripps Batch -->
     <div class="block">
-      <h3>Best Materials Per Trip</h3>
-      <table class="mat">
-        <thead><tr><th>Animal</th><th>Perfect Yield</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Cougar</td><td>~13</td><td>Best single-carcass yield in the game</td></tr>
-          <tr><td>Buck / Deer</td><td>~10</td><td>Reliable, common, your bread and butter</td></tr>
-          <tr><td>Bison</td><td>High (pelt)</td><td>Pelt only — carcass too big to carry solo</td></tr>
-          <tr><td>Turkey</td><td>Low, fast</td><td>Best small-game source, quick to bag</td></tr>
-          <tr><td>Fish</td><td>None</td><td>Doesn't count toward materials — skip</td></tr>
-        </tbody>
-      </table>
-      <p class="note">Keep carcasses whole — skinning before donating lowers the yield. Lasso a second carcass to your horse to double up each trip.</p>
+      <h3>Cripps Production Batch</h3>
+      <p class="note" style="margin-bottom:10px;">50-minute batch (25 goods). Alarms at 1 minute remaining.</p>
+      <div class="t-watch-row">
+        <div class="t-digits urgent-flash" id="t2-digits">50:00</div>
+        <div class="t-actions">
+          <button class="btn" id="t2-start">▶ Start</button>
+          <button class="btn ghost" id="t2-reset">Reset</button>
+        </div>
+      </div>
+      <div class="t-bar-track"><div class="t-bar-fill" id="t2-fill" style="width:0%"></div></div>
+      <div class="alert-box hidden" id="t2-alarm">⚠️ <strong>Batch almost done — 1 minute left!</strong></div>
+      <div class="alert-box alert-done hidden" id="t2-done">✓ <strong>Batch complete!</strong> 25 goods produced. Start the next batch.</div>
+    </div>
+
+    <!-- TIMER 3: Full Wagon -->
+    <div class="block">
+      <h3>Full Wagon</h3>
+      <p class="note" style="margin-bottom:10px;">100 goods at 2 minutes each — 3 hours 20 minutes total from a cold start.</p>
+      <div class="t-watch-row">
+        <div class="t-digits" id="t3-digits">3:20:00</div>
+        <div class="t-actions">
+          <button class="btn" id="t3-start">▶ Start</button>
+          <button class="btn" id="t3-pause" style="display:none;">⏸ Pause</button>
+          <button class="btn ghost" id="t3-reset">Reset</button>
+        </div>
+      </div>
+      <div class="t-bar-track">
+        <div class="t-bar-fill t-bar-wagon" id="t3-fill" style="width:0%"></div>
+      </div>
+      <div class="goods-display" style="margin-top:10px;">
+        <div class="goods-row">
+          <span class="goods-label">Goods produced</span>
+          <span class="goods-big" id="t3-goods">0 <span class="goods-of">/ 100</span></span>
+        </div>
+      </div>
+      <div class="alert-box alert-done hidden" id="t3-done">🎉 <strong>Wagon is full!</strong> 100 goods ready — head to a delivery point.</div>
+      <div class="alert-box hidden" id="t3-alarm">⚠️ <strong>Wagon nearly full — 1 minute to go!</strong> Get ready to deliver.</div>
     </div>
 
   </div>
@@ -1155,6 +1146,9 @@
         <div class="alert-box alert-done hidden" id="moon-done-alert">
           🥃 <strong>Batch is ready!</strong> Head to the shack and deliver while the bottles are fresh.
         </div>
+        <div class="alert-box hidden" id="moon-alarm">
+          ⚠️ <strong>Moonshine almost ready — 1 minute left!</strong> Get ready to collect your batch.
+        </div>
         <div class="run-actions" style="margin-top:10px;">
           <button class="btn ghost" id="moon-reset-btn">✕ Cancel batch</button>
         </div>
@@ -1207,6 +1201,9 @@
         <div class="alert-box alert-done hidden" id="bh-leg-done">
           🎯 <strong>Legendary bounties are back on the board!</strong> Head to any Bounty Board to pick your next target.
         </div>
+        <div class="alert-box hidden" id="bh-leg-alarm">
+          ⚠️ <strong>Bounty board unlocks in under 1 minute!</strong> Get ready to pick your next target.
+        </div>
         <button class="btn ghost" id="bh-leg-reset" style="width:100%;margin-top:8px;">✕ Clear</button>
       </div>
     </div>
@@ -1224,12 +1221,24 @@
   </div>
 </div><!-- end .wrap -->
 
+<div id="app-toast"></div>
+
 <footer>
   Collector set lists cover all 17 known sets across the rotating spawn cycles, and each item tracks how many you're holding (up to the in-game cap of 10). Rockstar randomises which cycle is live, so this ledger can't predict tonight's exact spots — tap "Find on map" on any set to open the live community map, and use the reset clock above to time your runs. Progress is saved to your device only.
 </footer>
 
 <script>
 (function(){
+
+  /* ── Toast ── */
+  let _toastTimer;
+  function showToast(msg, duration=2200){
+    const el = document.getElementById('app-toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+  }
 
   /* ============ DATA ============ */
   const RANKS = ['Ace','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Page','Knight','Queen','King'];
@@ -1295,7 +1304,7 @@
   const MAX_QTY = 10;
 
   let collectorState = {};
-  let traderState = { run: null };
+  let traderState = { t1:null, t2:null, t3:null, t3Paused:null };
 
   function defaultCollectorState(){
     const s = {};
@@ -1385,7 +1394,7 @@
     head.innerHTML = `
       <div class="titles">
         <h3>${set.name}</h3>
-        <div class="meta">${readySets} ready · ${needed.length} needed for next · ${typesFound}/${total} types found · $${set.value.toFixed(2)} each</div>
+        <div class="meta">${readySets} set${readySets===1?'':'s'} ready · Collecting set #${readySets+1} · ${needed.length} still needed · $${set.value.toFixed(2)} each</div>
         <div class="progress-track"><div class="progress-fill" style="width:${(typesFound/total*100)}%"></div></div>
       </div>
       <div class="chev">⌄</div>
@@ -1524,11 +1533,23 @@
 
   function adjustCount(set, idx, delta){
     const arr = collectorState[set.id];
+    const prevReady = Math.min(...arr);
     arr[idx] = Math.max(0, Math.min(MAX_QTY, arr[idx] + delta));
+    const newReady = Math.min(...arr);
     saveCollector();
     const cardEl = catWrap.querySelector(`.set-card[data-id="${set.id}"]`);
     refreshSetBody(cardEl, set);
     updateSummary();
+
+    // Celebrate when a new complete set is achieved
+    if(newReady > prevReady && newReady > 0){
+      showToast(`✓ Set #${newReady} complete! Now collecting set #${newReady + 1}`, 3000);
+      // Brief gold flash on card header
+      const head = cardEl.querySelector('.set-head');
+      head.style.transition = 'background .15s';
+      head.style.background = 'rgba(184,146,74,0.25)';
+      setTimeout(() => { head.style.background = ''; }, 1500);
+    }
   }
 
   function refreshSetBody(card, set){
@@ -1539,8 +1560,9 @@
     const needed = neededIndices(counts);
 
     // update header meta + progress bar
+    const collectingFor = readySets + 1;
     card.querySelector('.meta').textContent =
-      `${readySets} ready · ${needed.length} needed for next · ${typesFound}/${total} types found · $${set.value.toFixed(2)} each`;
+      `${readySets} set${readySets===1?'':'s'} ready · Collecting set #${collectingFor} · ${needed.length} still needed · $${set.value.toFixed(2)} each`;
     card.querySelector('.progress-fill').style.width = (typesFound/total*100) + '%';
 
     // rebuild body content in place
@@ -1573,254 +1595,157 @@
   }
 
   /* ============ RENDER: TRADER ============ */
-  const SECS_PER_GOOD    = 120;   // 2 min per good
-  const GOODS_PER_WAGON  = 100;
-  const GOODS_PER_SUPPLY = 25;    // resupply every 25 goods during production
-  const RESUPPLY_COUNT   = 3;     // during production: at 25, 50, 75 goods (#2, #3, #4)
-  const DELIVERY_SECS    = 600;   // 10 min delivery wait
-  const RESUPPLY_COST    = 20;    // $20 per resupply
+  // Three fully independent timers
+  const T1_SECS = 600;    // Resupply: 10 min
+  const T2_SECS = 3000;   // Cripps batch: 50 min
+  const T3_SECS = 12000;  // Full wagon: 200 min (100 goods x 2 min)
+  const ALARM_THRESHOLD = 60; // warn at 1 min remaining
 
-  // traderState.run = {
-  //   phase: 'predelivery' | 'active'
-  //   preDeliveryStartMs,      ms: when initial supplies were purchased
-  //   startEpoch,              ms: when production actually started
-  //   totalPausedMs,           ms: accumulated mid-run delivery pauses
-  //   deliveryStartMs,         ms: current mid-run delivery pause start (null = not pausing)
-  //   resuppliesTriggered,     number: mid-run resupplies purchased (0-3, for #2/#3/#4)
-  // }
-  let runInterval = null;
-  let preDeliveryInterval = null;
+  const T_IVS = {t1:null, t2:null, t3:null};
+  const T_ALARM_FIRED = {t1:false, t2:false, t3:false};
+
+  function playAlarm(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.18, 0.36].forEach(offset => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.4, ctx.currentTime + offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.15);
+        osc.start(ctx.currentTime + offset);
+        osc.stop(ctx.currentTime + offset + 0.15);
+      });
+    }catch(e){}
+  }
 
   function renderTrader(){
-    if(traderState.run){
-      if(traderState.run.phase === 'predelivery'){
-        showState('predelivery');
-        startPreDeliveryInterval();
-      } else {
-        showState('active');
-        startRunInterval();
+    ['t1','t2','t3'].forEach(id => {
+      if(traderState[id]) {
+        startTimer(id);
+        if(id === 't3'){
+          document.getElementById('t3-start').style.display = 'none';
+          document.getElementById('t3-pause').style.display = '';
+        }
       }
-    } else {
-      showState('idle');
+    });
+    // Restore paused state for wagon
+    if(traderState.t3Paused !== null && traderState.t3Paused !== undefined && !traderState.t3){
+      const dur = T3_SECS;
+      const rem = Math.max(0, dur - traderState.t3Paused);
+      const pct = Math.min(100, traderState.t3Paused / dur * 100);
+      document.getElementById('t3-digits').textContent = fmtHMS(rem);
+      document.getElementById('t3-fill').style.width = pct + '%';
+      const goods = Math.min(100, Math.floor(traderState.t3Paused / 120));
+      document.getElementById('t3-goods').innerHTML = goods + ' <span class="goods-of">/ 100</span>';
+      document.getElementById('t3-start').style.display = 'none';
+      document.getElementById('t3-pause').style.display = '';
+      document.getElementById('t3-pause').textContent = '▶ Resume';
     }
   }
 
-  function showState(state){
-    ['idle','predelivery','active'].forEach(s => {
-      document.getElementById('run-status-'+s).classList.toggle('hidden', s !== state);
-    });
+  function startTimer(id){
+    if(T_IVS[id]) clearInterval(T_IVS[id]);
+    T_IVS[id] = setInterval(() => tickTimer(id), 1000);
+    tickTimer(id);
   }
 
-  // ── Pre-production: buy initial supplies ──
-  document.getElementById('run-presupply-btn').addEventListener('click', () => {
-    traderState.run = {
-      phase: 'predelivery',
-      preDeliveryStartMs: Date.now(),
-      startEpoch: null,
-      totalPausedMs: 0,
-      deliveryStartMs: null,
-      resuppliesTriggered: 0,
-    };
-    saveTrader();
-    showState('predelivery');
-    startPreDeliveryInterval();
-  });
+  function tickTimer(id){
+    const startMs = traderState[id];
+    if(!startMs) return;
+    const dur = {t1:T1_SECS, t2:T2_SECS, t3:T3_SECS}[id];
+    const elapsed   = Math.floor((Date.now() - startMs) / 1000);
+    const remaining = Math.max(0, dur - elapsed);
+    const pct       = Math.min(100, elapsed / dur * 100);
 
-  document.getElementById('run-precancel-btn').addEventListener('click', () => {
-    clearInterval(preDeliveryInterval); preDeliveryInterval = null;
-    traderState.run = null;
-    saveTrader();
-    showState('idle');
-  });
+    const digEl = document.getElementById(id+'-digits');
+    digEl.textContent = id === 't3' ? fmtHMS(remaining) : fmtMS(remaining);
+    digEl.classList.toggle('urgent', remaining > 0 && remaining <= ALARM_THRESHOLD);
+    document.getElementById(id+'-fill').style.width = pct + '%';
 
-  function startPreDeliveryInterval(){
-    if(preDeliveryInterval) clearInterval(preDeliveryInterval);
-    preDeliveryInterval = setInterval(tickPreDelivery, 1000);
-    tickPreDelivery();
-  }
+    // Alarm: fires once when entering the 60s window — safe on page reload
+    const alarmEl = document.getElementById(id+'-alarm');
+    if(remaining > 0 && remaining <= ALARM_THRESHOLD){
+      if(alarmEl) alarmEl.classList.remove('hidden');
+      if(!T_ALARM_FIRED[id]){ T_ALARM_FIRED[id] = true; playAlarm(); }
+    } else if(remaining > ALARM_THRESHOLD){
+      if(alarmEl) alarmEl.classList.add('hidden');
+    }
 
-  function tickPreDelivery(){
-    const r = traderState.run;
-    if(!r || r.phase !== 'predelivery') return;
-    const elapsed  = Math.floor((Date.now() - r.preDeliveryStartMs) / 1000);
-    const remaining = Math.max(0, DELIVERY_SECS - elapsed);
-    document.getElementById('cd-predelivery').textContent = fmtMS(remaining);
-    document.getElementById('predelivery-fill').style.width = Math.min(100, elapsed / DELIVERY_SECS * 100) + '%';
+    if(id === 't3'){
+      const goods = Math.min(100, Math.floor(elapsed / 120));
+      document.getElementById('t3-goods').innerHTML =
+        goods + ' <span class="goods-of">/ 100</span>';
+    }
 
     if(remaining === 0){
-      clearInterval(preDeliveryInterval); preDeliveryInterval = null;
-      // Transition to active production
-      r.phase = 'active';
-      r.startEpoch = Date.now();
+      clearInterval(T_IVS[id]); T_IVS[id] = null;
+      document.getElementById(id+'-done').classList.remove('hidden');
+      if(id === 't3') playAlarm();
+    }
+  }
+
+  function resetTimer(id){
+    clearInterval(T_IVS[id]); T_IVS[id] = null;
+    traderState[id] = null;
+    if(id === 't3') traderState.t3Paused = null;
+    T_ALARM_FIRED[id] = false;
+    saveTrader();
+    const dur = {t1:T1_SECS, t2:T2_SECS, t3:T3_SECS}[id];
+    document.getElementById(id+'-digits').textContent = id === 't3' ? fmtHMS(dur) : fmtMS(dur);
+    document.getElementById(id+'-digits').classList.remove('urgent');
+    document.getElementById(id+'-fill').style.width = '0%';
+    document.getElementById(id+'-alarm').classList.add('hidden');
+    document.getElementById(id+'-done').classList.add('hidden');
+    if(id === 't3') document.getElementById('t3-goods').innerHTML = '0 <span class="goods-of">/ 100</span>';
+  }
+
+  ['t1','t2','t3'].forEach(id => {
+    document.getElementById(id+'-start').addEventListener('click', () => {
+      if(traderState[id]) return;
+      document.getElementById(id+'-done').classList.add('hidden');
+      document.getElementById(id+'-alarm').classList.add('hidden');
+      traderState[id] = Date.now();
+      if(id === 't3') traderState.t3Paused = null;
+      T_ALARM_FIRED[id] = false;
       saveTrader();
-      showState('active');
-      startRunInterval();
-    }
-  }
-
-  // ── Reset ──
-  document.getElementById('run-reset-btn').addEventListener('click', () => {
-    clearInterval(runInterval); runInterval = null;
-    clearInterval(preDeliveryInterval); preDeliveryInterval = null;
-    traderState.run = null;
-    saveTrader();
-    resetRunUI();
-    showState('idle');
-  });
-
-  // ── Mid-run resupply purchased ──
-  document.getElementById('resupply-done-btn').addEventListener('click', () => {
-    document.getElementById('resupply-alert').classList.add('hidden');
-    document.getElementById('delivery-alert').classList.remove('hidden');
-    traderState.run.deliveryStartMs = Date.now();
-    traderState.run.resuppliesTriggered++;
-    updateTally();
-    saveTrader();
-  });
-
-  function startRunInterval(){
-    if(runInterval) clearInterval(runInterval);
-    runInterval = setInterval(tickRun, 1000);
-    tickRun();
-  }
-
-  function effectiveProductionSecs(){
-    const r = traderState.run;
-    const nowMs = Date.now();
-    const wallMs = nowMs - r.startEpoch;
-    let pausedMs = r.totalPausedMs || 0;
-    if(r.deliveryStartMs){
-      const deliveryElapsed = nowMs - r.deliveryStartMs;
-      if(deliveryElapsed >= DELIVERY_SECS * 1000){
-        pausedMs += DELIVERY_SECS * 1000;
-        r.totalPausedMs = pausedMs;
-        r.deliveryStartMs = null;
-        saveTrader();
-        document.getElementById('delivery-alert').classList.add('hidden');
-      } else {
-        pausedMs += deliveryElapsed;
-      }
-    }
-    return Math.max(0, Math.floor((wallMs - pausedMs) / 1000));
-  }
-
-  function tickRun(){
-    if(!traderState.run || traderState.run.phase !== 'active') return;
-    const r = traderState.run;
-
-    // Mid-run delivery countdown
-    if(r.deliveryStartMs){
-      const delivElapsed = Math.floor((Date.now() - r.deliveryStartMs) / 1000);
-      const delivRem = Math.max(0, DELIVERY_SECS - delivElapsed);
-      const cdEl = document.getElementById('cd-delivery');
-      if(cdEl) cdEl.textContent = fmtMS(delivRem);
-      const fillEl = document.getElementById('delivery-fill');
-      if(fillEl) fillEl.style.width = (delivElapsed / DELIVERY_SECS * 100) + '%';
-      if(delivRem === 0) document.getElementById('delivery-alert').classList.add('hidden');
-    }
-
-    const prodSecs  = effectiveProductionSecs();
-    const goodsMade = Math.min(GOODS_PER_WAGON, Math.floor(prodSecs / SECS_PER_GOOD));
-
-    // Next resupply threshold (#2=25, #3=50, #4=75 — resupply #1 already done before start)
-    const nextThreshold    = (r.resuppliesTriggered + 1) * GOODS_PER_SUPPLY;
-    const secsToNextResupply = Math.max(0, nextThreshold * SECS_PER_GOOD - prodSecs);
-
-    const totalProdSecs = GOODS_PER_WAGON * SECS_PER_GOOD;
-    const remainingPauses = Math.max(0, RESUPPLY_COUNT - r.resuppliesTriggered);
-    const remainingDeliveryMs = r.deliveryStartMs
-      ? Math.max(0, DELIVERY_SECS * 1000 - (Date.now() - r.deliveryStartMs)) : 0;
-    const wagonEtaSecs = Math.max(0,
-      totalProdSecs - prodSecs
-      + remainingPauses * DELIVERY_SECS
-      - remainingDeliveryMs / 1000
-    );
-
-    // Goods display
-    document.getElementById('run-goods').innerHTML =
-      `${goodsMade} <span class="goods-of">/ ${GOODS_PER_WAGON}</span>`;
-    document.getElementById('wagon-fill').style.width = (goodsMade / GOODS_PER_WAGON * 100) + '%';
-    document.getElementById('cd-wagon').textContent = fmtHMS(Math.round(wagonEtaSecs));
-
-    // Resupply chips — #1 always done (pre-production), #2/#3/#4 during production
-    const chip1 = document.getElementById('rs-1');
-    chip1.className = 'rs-chip done';
-    chip1.textContent = '✓ Resupply #1';
-
-    [2,3,4].forEach(n => {
-      const chip = document.getElementById('rs-'+n);
-      const threshold = (n-1) * GOODS_PER_SUPPLY; // #2=25, #3=50, #4=75
-      const triggered = r.resuppliesTriggered >= (n-1);
-      if(goodsMade >= threshold || triggered){
-        chip.className = 'rs-chip done';
-        chip.textContent = '✓ Resupply #'+n;
-      } else {
-        chip.className = 'rs-chip';
-        chip.textContent = 'Resupply #'+n;
+      startTimer(id);
+      if(id === 't3'){
+        document.getElementById('t3-start').style.display = 'none';
+        document.getElementById('t3-pause').style.display = '';
       }
     });
+    document.getElementById(id+'-reset').addEventListener('click', () => {
+      resetTimer(id);
+      if(id === 't3'){
+        document.getElementById('t3-start').style.display = '';
+        document.getElementById('t3-pause').style.display = 'none';
+      }
+    });
+  });
 
-    // Resupply watch
-    const cdEl  = document.getElementById('cd-resupply');
-    const lblEl = document.getElementById('resupply-label');
-    const isDelivering  = !!r.deliveryStartMs;
-    const allDone = r.resuppliesTriggered >= RESUPPLY_COUNT;
-
-    if(goodsMade >= GOODS_PER_WAGON || allDone){
-      cdEl.textContent = '--:--';
-      cdEl.classList.remove('urgent');
-      lblEl.textContent = allDone ? 'All resupplies done' : 'Wagon full!';
-    } else if(isDelivering){
-      cdEl.textContent = '--:--';
-      cdEl.classList.remove('urgent');
-      lblEl.textContent = 'Waiting on delivery…';
+  // Pause / Resume for wagon timer only
+  document.getElementById('t3-pause').addEventListener('click', () => {
+    const btn = document.getElementById('t3-pause');
+    if(traderState.t3Paused !== null){
+      // ── Resume ──
+      // Reconstruct startMs so elapsed = t3Paused seconds
+      traderState.t3 = Date.now() - traderState.t3Paused * 1000;
+      traderState.t3Paused = null;
+      saveTrader();
+      startTimer('t3');
+      btn.textContent = '⏸ Pause';
     } else {
-      cdEl.textContent = fmtHMS(secsToNextResupply);
-      // Label shows which resupply is next (#2, #3, or #4)
-      const nextNum = r.resuppliesTriggered + 2;
-      lblEl.textContent = `Resupply #${nextNum} at ${nextThreshold} goods`;
-      if(secsToNextResupply < 120){
-        cdEl.classList.add('urgent');
-        if(document.getElementById('resupply-alert').classList.contains('hidden') && !isDelivering){
-          document.getElementById('resupply-alert').classList.remove('hidden');
-        }
-      } else {
-        cdEl.classList.remove('urgent');
-      }
+      // ── Pause ──
+      const elapsed = Math.floor((Date.now() - traderState.t3) / 1000);
+      traderState.t3Paused = elapsed;
+      traderState.t3 = null;
+      saveTrader();
+      clearInterval(T_IVS.t3); T_IVS.t3 = null;
+      btn.textContent = '▶ Resume';
     }
-
-    if(goodsMade >= GOODS_PER_WAGON){
-      document.getElementById('wagon-alert').classList.remove('hidden');
-      clearInterval(runInterval); runInterval = null;
-    }
-  }
-
-  function updateTally(){
-    // Resupply #1 ($20) always spent, plus any mid-run resupplies
-    const spent = (1 + (traderState.run ? traderState.run.resuppliesTriggered : 0)) * RESUPPLY_COST;
-    document.getElementById('tally-val').textContent = `$${spent}`;
-  }
-
-  function resetRunUI(){
-    document.getElementById('resupply-alert').classList.add('hidden');
-    document.getElementById('delivery-alert').classList.add('hidden');
-    document.getElementById('wagon-alert').classList.add('hidden');
-    document.getElementById('cd-predelivery').textContent = '10:00';
-    document.getElementById('predelivery-fill').style.width = '0%';
-    document.getElementById('cd-resupply').textContent = '00:50:00';
-    document.getElementById('cd-resupply').classList.remove('urgent');
-    document.getElementById('resupply-label').textContent = 'Resupply #2 due at 25 goods';
-    document.getElementById('cd-wagon').textContent = '03:20:00';
-    document.getElementById('run-goods').innerHTML = '0 <span class="goods-of">/ 100</span>';
-    document.getElementById('wagon-fill').style.width = '0%';
-    document.getElementById('tally-val').textContent = '$20';
-    const chip1 = document.getElementById('rs-1');
-    chip1.className = 'rs-chip done'; chip1.textContent = '✓ Resupply #1';
-    [2,3,4].forEach(n => {
-      const chip = document.getElementById('rs-'+n);
-      chip.className = 'rs-chip'; chip.textContent = 'Resupply #'+n;
-    });
-  }
+  });
 
   function fmtHMS(totalSecs){
     const h = Math.floor(totalSecs / 3600);
@@ -1833,6 +1758,7 @@
     const s = totalSecs % 60;
     return [m,s].map(n => String(n).padStart(2,'0')).join(':');
   }
+
   /* ============ NATURALIST DATA ============ */
   // harriet:true = purchased from Harriet, no fast travel location
   // Actions: Tracked, Killed, Skinned, Studied, Sedated, Sampled, Photographed
@@ -1841,53 +1767,62 @@
     {
       id:'dark', label:'Dark',
       animals:[
-        {id:'teca_gator',      name:'Teca Gator',          location:'Saint Denis',      time:'9pm – 6am or DAY',       weather:'Fog · Rain · Storms'},
-        {id:'night_beaver',    name:'Night Beaver',         harriet:true},
-        {id:'tatanka_bison',   name:'Tatanka Bison',        location:'Emerald Station',  time:'9am – 6pm or NIGHT',     weather:'Rain · Drizzle'},
-        {id:'sapa_cougar',     name:'Sapa Cougar',          harriet:true},
-        {id:'midnight_coyote', name:'Midnight Paw Coyote',  location:'Strawberry',       time:'6am – 9pm',              weather:'Clear'},
-        {id:'katata_elk',      name:'Katata Elk',           location:'Valentine',        time:'8am – 6pm or NIGHT',     weather:'Clear · Fog'},
-        {id:'onyx_wolf',       name:'Onyx Wolf',            location:'Wapiti',           time:'9pm – 6am or DAY',       weather:'Clear'},
-        {id:'rutile_ram',      name:'Rutile Horn Ram',      harriet:true},
+        {id:'teca_gator',        name:'Teca Gator',            location:'Saint Denis',      time:'9pm – 6am or DAY',       weather:'Fog · Rain · Storms'},
+        {id:'night_beaver',      name:'Night Beaver',           harriet:true},
+        {id:'tatanka_bison',     name:'Tatanka Bison',          location:'Emerald Station',  time:'9am – 6pm or NIGHT',     weather:'Rain · Drizzle'},
+        {id:'sapa_cougar',       name:'Sapa Cougar',            harriet:true},
+        {id:'midnight_coyote',   name:'Midnight Paw Coyote',    location:'Strawberry',       time:'6am – 9pm',              weather:'Clear'},
+        {id:'katata_elk',        name:'Katata Elk',             location:'Valentine',        time:'8am – 6pm or NIGHT',     weather:'Clear · Fog'},
+        {id:'onyx_wolf',         name:'Onyx Wolf',              location:'Wapiti',           time:'9pm – 6am or DAY',       weather:'Clear'},
+        {id:'rutile_ram',        name:'Rutile Horn Ram',        harriet:true},
+        {id:'knight_moose',      name:'Knight Moose',           location:'Annesburg',        time:'8am – 8pm',              weather:'Any Weather',    tip:'Northern Kamassa River, Roanoke Ridge. Skittish — approach quietly on foot.'},
+        {id:'nightwalker_panther',name:'Nightwalker Panther',   location:'Rhodes',           time:'5pm – 5am',              weather:'Fog',            tip:'SW of Bolger Glade, SW Lemoyne. Aggressive — use cover and approach slowly.'},
       ]
     },
     {
       id:'light', label:'Light',
       animals:[
-        {id:'moon_beaver',     name:'Moon Beaver',          location:'Van Horn',         time:'6am – 9am or 5pm – 9pm', weather:'Rain · Drizzle · Fog'},
-        {id:'winyan_bison',    name:'Winyan Bison',         location:'Colter',           time:'9pm – 6am or DAY',       weather:'Clear'},
-        {id:'snow_buck',       name:'Snow Buck',            location:'Manzanita Post',   time:'5am – 10am or NIGHT',    weather:'Clear'},
-        {id:'iguga_cougar',    name:'Iguga Cougar',         location:'Blackwater',       time:'5pm – 9pm or NIGHT',     weather:'Storms'},
-        {id:'inahme_elk',      name:'Inahme Elk',           harriet:true},
-        {id:'moonstone_wolf',  name:'Moonstone Wolf',       harriet:true},
-        {id:'milk_coyote',     name:'Milk Coyote',          harriet:true},
-        {id:'gabbro_ram',      name:'Gabbro Horn Ram',      location:'Armadillo',        time:'5am – 5pm',              weather:'Clear'},
+        {id:'moon_beaver',       name:'Moon Beaver',            location:'Van Horn',         time:'6am – 9am or 5pm – 9pm', weather:'Rain · Drizzle · Fog'},
+        {id:'winyan_bison',      name:'Winyan Bison',           location:'Colter',           time:'9pm – 6am or DAY',       weather:'Clear'},
+        {id:'snow_buck',         name:'Snow Buck',              location:'Manzanita Post',   time:'5am – 10am or NIGHT',    weather:'Clear'},
+        {id:'iguga_cougar',      name:'Iguga Cougar',           location:'Blackwater',       time:'5pm – 9pm or NIGHT',     weather:'Storms'},
+        {id:'inahme_elk',        name:'Inahme Elk',             harriet:true},
+        {id:'moonstone_wolf',    name:'Moonstone Wolf',         harriet:true},
+        {id:'milk_coyote',       name:'Milk Coyote',            harriet:true},
+        {id:'gabbro_ram',        name:'Gabbro Horn Ram',        location:'Armadillo',        time:'5am – 5pm',              weather:'Clear'},
+        {id:'snowflake_moose',   name:'Snowflake Moose',        location:'Colter',           time:'8am – 8pm',              weather:'Rain',           tip:'Near Barrow Lagoon, Grizzlies West. White coat blends with snow — watch for the black antlers.'},
+        {id:'ghost_panther',     name:'Ghost Panther',          location:'Saint Denis',      time:'8pm – 8am',              weather:'Rain · Fog',     tip:'Bluewater Marsh / Bayou Nwa, Lemoyne. Enormous territory — circle the marsh. Extremely dangerous.'},
       ]
     },
     {
       id:'red_blond', label:'Red & Blond',
       animals:[
-        {id:'sun_gator',       name:'Sun Gator',            location:'Lagras',           time:'6am – 9am or DAY',       weather:'Fog · Rain'},
-        {id:'banded_gator',    name:'Banded Gator',         harriet:true},
-        {id:'payta_bison',     name:'Payta Bison',          harriet:true},
-        {id:'wakpa_boar',      name:'Wakpa Boar',           location:'MacFarlane Ranch', time:'9am – 9pm or DAY',       weather:'Clear · Rain'},
-        {id:'redstreak_coyote',name:'Red Streak Coyote',    location:'MacFarlane Ranch', time:'9am – 6pm or DAY',       weather:'Clear · Rain'},
-        {id:'ozula_elk',       name:'Ozula Elk',            location:'Armadillo',        time:'6pm – 6am',              weather:'Any Weather'},
-        {id:'emerald_wolf',    name:'Emerald Wolf',         location:'Emerald Station',  time:'8pm – 8am',              weather:'Any Weather'},
-        {id:'zizi_beaver',     name:'Zizi Beaver',          location:'Strawberry',       time:'6am – 9am or 5pm – 9pm', weather:'Any Weather'},
-        {id:'cogi_boar',       name:'Cogi Boar',            location:'Van Horn',         time:'6am – 9am or DAY',       weather:'Clear'},
+        {id:'sun_gator',         name:'Sun Gator',              location:'Lagras',           time:'6am – 9am or DAY',       weather:'Fog · Rain'},
+        {id:'banded_gator',      name:'Banded Gator',           harriet:true},
+        {id:'payta_bison',       name:'Payta Bison',            harriet:true},
+        {id:'wakpa_boar',        name:'Wakpa Boar',             location:'MacFarlane Ranch', time:'9am – 9pm or DAY',       weather:'Clear · Rain'},
+        {id:'redstreak_coyote',  name:'Red Streak Coyote',      location:'MacFarlane Ranch', time:'9am – 6pm or DAY',       weather:'Clear · Rain'},
+        {id:'ozula_elk',         name:'Ozula Elk',              location:'Armadillo',        time:'6pm – 6am',              weather:'Any Weather'},
+        {id:'emerald_wolf',      name:'Emerald Wolf',           location:'Emerald Station',  time:'8pm – 8am',              weather:'Any Weather'},
+        {id:'zizi_beaver',       name:'Zizi Beaver',            location:'Strawberry',       time:'6am – 9am or 5pm – 9pm', weather:'Any Weather'},
+        {id:'cogi_boar',         name:'Cogi Boar',              location:'Van Horn',         time:'6am – 9am or DAY',       weather:'Clear'},
+        {id:'ridgeback_bear',    name:'Ridgeback Spirit Bear',  location:'Strawberry',       time:'8am – 8pm',              weather:'Clear',          tip:'Near Little Creek River, West Elizabeth. Red stripe down back. Very aggressive — prepare before engaging.'},
+        {id:'golden_bear',       name:'Golden Spirit Bear',     harriet:true,                                                                          tip:'Big Valley, West Elizabeth. Harriet mission only — reach Naturalist Rank 5 first.'},
+        {id:'ruddy_moose',       name:'Ruddy Moose',            harriet:true,                                                                          tip:'Tall Trees, West Elizabeth. Harriet mission only — reach Naturalist Rank 5 first.'},
       ]
     },
     {
       id:'patterned', label:'Patterned',
       animals:[
-        {id:'icachi_boar',     name:'Icachi Boar',          harriet:true},
-        {id:'mudrunner_buck',  name:'Mud Runner Buck',      location:'Valentine',        time:'9am – 9pm',              weather:'Clear'},
-        {id:'maza_cougar',     name:'Maza Cougar',          location:'Tumbleweed',       time:'6am – 9am or DAY',       weather:'Clear'},
-        {id:'ota_fox',         name:'Ota Fox',              location:'Rhodes',           time:'6am – 9am or 5pm – 9pm', weather:'Clear'},
-        {id:'marble_fox',      name:'Marble Fox',           location:'Colter',           time:'6am – 9am or 5pm – 9pm', weather:'Clear'},
-        {id:'cross_fox',       name:'Cross Fox',            harriet:true},
-        {id:'chalk_ram',       name:'Chalk Horn Ram',       location:'Wapiti',           time:'9am – 9pm',              weather:'Clear · Fog'},
+        {id:'icachi_boar',       name:'Icachi Boar',            harriet:true},
+        {id:'mudrunner_buck',    name:'Mud Runner Buck',        location:'Valentine',        time:'9am – 9pm',              weather:'Clear'},
+        {id:'maza_cougar',       name:'Maza Cougar',            location:'Tumbleweed',       time:'6am – 9am or DAY',       weather:'Clear'},
+        {id:'ota_fox',           name:'Ota Fox',                location:'Rhodes',           time:'6am – 9am or 5pm – 9pm', weather:'Clear'},
+        {id:'marble_fox',        name:'Marble Fox',             location:'Colter',           time:'6am – 9am or 5pm – 9pm', weather:'Clear'},
+        {id:'cross_fox',         name:'Cross Fox',              harriet:true},
+        {id:'chalk_ram',         name:'Chalk Horn Ram',         location:'Wapiti',           time:'9am – 9pm',              weather:'Clear · Fog'},
+        {id:'owiza_bear',        name:'Owiza Bear',             location:'Blackwater',       time:'8am – 8pm',              weather:'Clear · Rain',   tip:'Near Dakota River. Dark legs, grey back. Aggressive if provoked.'},
+        {id:'iwakta_panther',    name:'Iwakta Panther',         harriet:true,                                                                          tip:'Near Braithwaite Manor, Lemoyne. Harriet mission only — rank 5 required. Bright spotted/rosette coat.'},
       ]
     }
   ];
@@ -1979,6 +1914,12 @@
       wx.className = 'nat-badge';
       wx.textContent = '☁️ ' + animal.weather;
       meta.appendChild(wx);
+    }
+    if(animal.tip){
+      const tipEl = document.createElement('div');
+      tipEl.style.cssText = 'font-size:11px;color:#5a4a30;margin-top:4px;font-style:italic;';
+      tipEl.textContent = animal.tip;
+      meta.appendChild(tipEl);
     }
     info.appendChild(meta);
 
@@ -2215,6 +2156,7 @@
     const strength = getSelectedStrength();
     const rank15 = document.getElementById('moon-rank15').checked;
     moonState.run = { startEpoch: Date.now(), strength, rank15 };
+    moonAlarmFired = false;
     saveMoonshiner();
     showMoonActive();
     startMoonInterval();
@@ -2223,6 +2165,7 @@
   function cancelBrew(){
     clearInterval(moonInterval); moonInterval = null;
     moonState.run = null;
+    moonAlarmFired = false;
     saveMoonshiner();
     resetMoonUI();
     document.getElementById('moon-idle').classList.remove('hidden');
@@ -2244,6 +2187,8 @@
     tickMoon();
   }
 
+  let moonAlarmFired = false;
+
   function tickMoon(){
     const r = moonState.run;
     if(!r) return;
@@ -2256,9 +2201,19 @@
     document.getElementById('moon-cd').textContent = fmtHMS(remaining);
     document.getElementById('moon-fill').style.width = pct + '%';
 
+    // 1-min alarm
+    const moonAlarmEl = document.getElementById('moon-alarm');
+    if(remaining > 0 && remaining <= 60){
+      if(moonAlarmEl) moonAlarmEl.classList.remove('hidden');
+      if(!moonAlarmFired){ moonAlarmFired = true; playAlarm(); }
+    } else if(remaining > 60){
+      if(moonAlarmEl) moonAlarmEl.classList.add('hidden');
+    }
+
     if(remaining === 0){
       document.getElementById('moon-cd-sub').textContent = 'Ready to deliver!';
       document.getElementById('moon-done-alert').classList.remove('hidden');
+      playAlarm();
       clearInterval(moonInterval); moonInterval = null;
     } else {
       const etaMs = r.startEpoch + totalSecs * 1000;
@@ -2272,6 +2227,8 @@
     document.getElementById('moon-cd-sub').textContent = 'Brewing…';
     document.getElementById('moon-fill').style.width = '0%';
     document.getElementById('moon-done-alert').classList.add('hidden');
+    const moonAlarmEl = document.getElementById('moon-alarm');
+    if(moonAlarmEl) moonAlarmEl.classList.add('hidden');
   }
 
   function renderMoonRecipes(){
@@ -2338,6 +2295,7 @@
   function initBhTimers(){
     document.getElementById('bh-leg-start').addEventListener('click', () => {
       bhState.legCooldownStart = Date.now();
+      bhAlarmFired = false;
       saveBounty();
       showBhTimer('leg');
       startBhInterval('leg');
@@ -2357,14 +2315,19 @@
     document.getElementById(`bh-${type}-active`).classList.remove('hidden');
   }
 
+  let bhAlarmFired = false;
+
   function resetBhTimer(type){
     document.getElementById(`bh-${type}-idle`).classList.remove('hidden');
     document.getElementById(`bh-${type}-active`).classList.add('hidden');
     document.getElementById(`bh-${type}-cd`).textContent = '48:00';
     document.getElementById(`bh-${type}-fill`).style.width = '0%';
     document.getElementById(`bh-${type}-done`).classList.add('hidden');
+    const alarmEl = document.getElementById(`bh-${type}-alarm`);
+    if(alarmEl) alarmEl.classList.add('hidden');
     document.getElementById('bh-leg-status').textContent = 'On Cooldown';
     document.getElementById('bh-leg-sub').textContent = 'Next bounty available at —';
+    bhAlarmFired = false;
   }
 
   function startBhInterval(type){
@@ -2384,6 +2347,16 @@
     document.getElementById('bh-leg-cd').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     document.getElementById('bh-leg-fill').style.width = pct + '%';
     const unlockTime = new Date(start + BH_CD_SECS * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    // 1-min alarm
+    const bhAlarmEl = document.getElementById('bh-leg-alarm');
+    if(remaining > 0 && remaining <= 60){
+      if(bhAlarmEl) bhAlarmEl.classList.remove('hidden');
+      if(!bhAlarmFired){ bhAlarmFired = true; playAlarm(); }
+    } else if(remaining > 60){
+      if(bhAlarmEl) bhAlarmEl.classList.add('hidden');
+    }
+
     if(remaining === 0){
       document.getElementById('bh-leg-done').classList.remove('hidden');
       document.getElementById('bh-leg-status').textContent = '✓ Ready!';
