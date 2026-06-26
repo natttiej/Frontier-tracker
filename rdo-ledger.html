@@ -589,6 +589,64 @@
   .run-actions{margin-top:6px;}
   .run-start-btn{width:100%;}
 
+  /* ── Species cooldown timers ── */
+  .scd-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dashed var(--paper-edge);
+  }
+  .scd-row:last-child{border-bottom:none;}
+  .scd-species{
+    min-width:110px;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .scd-variants{
+    flex:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    min-width:0;
+  }
+  .scd-chip{
+    font-family:'Special Elite',monospace;
+    font-size:9.5px;
+    padding:2px 6px;
+    border-radius:4px;
+    background:var(--paper-dark);
+    border:1px solid var(--paper-edge);
+    color:#5a4a30;
+    white-space:nowrap;
+  }
+  .scd-timer{
+    font-family:'Special Elite',monospace;
+    font-size:15px;
+    letter-spacing:1px;
+    color:var(--ink);
+    min-width:70px;
+    text-align:right;
+    flex-shrink:0;
+  }
+  .scd-timer.urgent{color:var(--rust);animation:tpulse 1s ease infinite;}
+  .scd-timer.available{color:var(--sage-light);font-size:12px;}
+  .scd-btns{display:flex;gap:5px;flex-shrink:0;}
+  .scd-btn{
+    font-family:'Special Elite',monospace;
+    font-size:10.5px;
+    padding:5px 9px;
+    border-radius:6px;
+    border:1px solid var(--rust-dark);
+    background:var(--rust);
+    color:#fdf6e8;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .scd-btn.ghost{background:transparent;color:var(--rust-dark);}
+  .scd-btn:disabled{opacity:0.35;cursor:not-allowed;}
+
   /* ── Trader independent timers ── */
   .t-watch-row{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -1097,6 +1155,13 @@
 
     <div class="map-banner" style="margin-bottom:14px;">
       <p>Animals shown in <span style="color:var(--rust);font-weight:600;">red</span> must be purchased from Harriet — no fast travel location applies. All others use the listed fast travel point.</p>
+    </div>
+
+    <!-- Species Cooldowns -->
+    <div class="block" style="margin-bottom:14px;">
+      <h3>Species Cooldowns <span style="font-family:'Vollkorn',serif;font-size:12px;font-weight:400;color:var(--paper-dark);"> — 72 hrs between same-species hunts</span></h3>
+      <p class="note" style="margin-bottom:12px;">Hunting any legendary animal triggers a 72-hour cooldown for all other animals of the same species. Start the timer the moment you complete a hunt.</p>
+      <div id="nat-cd-list"></div>
     </div>
 
     <div id="nat-categories"></div>
@@ -1893,7 +1958,173 @@
 
   const NAT_TOTAL_ANIMALS = NAT_CATEGORIES.reduce((n,c)=>n+c.animals.length,0);
   const NAT_HARRIET_COUNT = NAT_CATEGORIES.reduce((n,c)=>n+c.animals.filter(a=>a.harriet).length,0);
-  const NAT_KEY = 'rdo-naturalist-v1';
+  const NAT_KEY    = 'rdo-naturalist-v1';
+  const NAT_CD_KEY = 'rdo-nat-cooldowns-v1';
+  const SPECIES_CD_SECS = 72 * 3600; // 72 hours
+
+  const SPECIES_GROUPS = [
+    { key:'cougar',  label:'Cougar / Panther', ids:['sapa_cougar','iguga_cougar','maza_cougar','nightwalker_panther','ghost_panther','iwakta_panther'] },
+    { key:'wolf',    label:'Wolf',              ids:['onyx_wolf','moonstone_wolf','emerald_wolf'] },
+    { key:'moose',   label:'Moose',             ids:['knight_moose','snowflake_moose','ruddy_moose'] },
+    { key:'elk',     label:'Elk',               ids:['katata_elk','inahme_elk','ozula_elk'] },
+    { key:'bison',   label:'Bison',             ids:['tatanka_bison','winyan_bison','payta_bison'] },
+    { key:'beaver',  label:'Beaver',            ids:['night_beaver','moon_beaver','zizi_beaver'] },
+    { key:'ram',     label:'Ram',               ids:['rutile_ram','gabbro_ram','chalk_ram'] },
+    { key:'gator',   label:'Alligator',         ids:['teca_gator','sun_gator','banded_gator'] },
+    { key:'buck',    label:'Buck',              ids:['snow_buck','mudrunner_buck'] },
+    { key:'boar',    label:'Boar',              ids:['wakpa_boar','cogi_boar','icachi_boar'] },
+    { key:'coyote',  label:'Coyote',            ids:['midnight_coyote','milk_coyote','redstreak_coyote'] },
+    { key:'bear',    label:'Bear',              ids:['ridgeback_bear','golden_bear','owiza_bear'] },
+    { key:'fox',     label:'Fox',               ids:['ota_fox','marble_fox','cross_fox'] },
+  ];
+
+  // Look up animal name by id across all categories
+  function animalName(id){
+    for(const cat of NAT_CATEGORIES){
+      const a = cat.animals.find(x => x.id === id);
+      if(a) return a.name;
+    }
+    return id;
+  }
+
+  let natCdState = {}; // { species_key: startMs }
+  const natCdIvs  = {}; // { species_key: intervalId }
+  const natCdAlarmFired = {}; // { species_key: bool }
+
+  async function loadNatCooldowns(){
+    natCdState = {};
+    try{
+      const r = localStorage.getItem(NAT_CD_KEY);
+      if(r) natCdState = JSON.parse(r);
+    }catch(e){}
+  }
+  async function saveNatCooldowns(){
+    try{ localStorage.setItem(NAT_CD_KEY, JSON.stringify(natCdState)); }catch(e){}
+  }
+
+  function renderNatCooldowns(){
+    const wrap = document.getElementById('nat-cd-list');
+    wrap.innerHTML = '';
+    SPECIES_GROUPS.forEach(sg => {
+      const row = document.createElement('div');
+      row.className = 'scd-row';
+      row.dataset.key = sg.key;
+
+      const species = document.createElement('div');
+      species.className = 'scd-species';
+      species.textContent = sg.label;
+
+      const variants = document.createElement('div');
+      variants.className = 'scd-variants';
+      sg.ids.forEach(id => {
+        const chip = document.createElement('span');
+        chip.className = 'scd-chip';
+        chip.textContent = animalName(id);
+        variants.appendChild(chip);
+      });
+
+      const timer = document.createElement('div');
+      timer.className = 'scd-timer available';
+      timer.id = 'scd-t-' + sg.key;
+      timer.textContent = 'Available';
+
+      const btns = document.createElement('div');
+      btns.className = 'scd-btns';
+
+      const startBtn = document.createElement('button');
+      startBtn.className = 'scd-btn';
+      startBtn.id = 'scd-start-' + sg.key;
+      startBtn.textContent = '▶ Hunt';
+      startBtn.addEventListener('click', () => startSpeciesTimer(sg.key));
+
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'scd-btn ghost';
+      resetBtn.id = 'scd-reset-' + sg.key;
+      resetBtn.textContent = 'Reset';
+      resetBtn.disabled = !natCdState[sg.key];
+      resetBtn.addEventListener('click', () => resetSpeciesTimer(sg.key));
+
+      btns.appendChild(startBtn);
+      btns.appendChild(resetBtn);
+      row.appendChild(species);
+      row.appendChild(variants);
+      row.appendChild(timer);
+      row.appendChild(btns);
+      wrap.appendChild(row);
+
+      // Restore running timer
+      if(natCdState[sg.key]){
+        natCdAlarmFired[sg.key] = false;
+        startSpeciesInterval(sg.key);
+      }
+    });
+  }
+
+  function startSpeciesTimer(key){
+    if(natCdState[key]) return; // already running
+    natCdState[key] = Date.now();
+    natCdAlarmFired[key] = false;
+    saveNatCooldowns();
+    document.getElementById('scd-reset-' + key).disabled = false;
+    startSpeciesInterval(key);
+    showToast(`⏱ 72-hr cooldown started for ${SPECIES_GROUPS.find(s=>s.key===key)?.label}`);
+  }
+
+  function startSpeciesInterval(key){
+    if(natCdIvs[key]) clearInterval(natCdIvs[key]);
+    natCdIvs[key] = setInterval(() => tickSpeciesTimer(key), 1000);
+    tickSpeciesTimer(key);
+  }
+
+  function tickSpeciesTimer(key){
+    const startMs = natCdState[key];
+    if(!startMs) return;
+    const elapsed   = Math.floor((Date.now() - startMs) / 1000);
+    const remaining = Math.max(0, SPECIES_CD_SECS - elapsed);
+    const timerEl   = document.getElementById('scd-t-' + key);
+    const startBtn  = document.getElementById('scd-start-' + key);
+    if(!timerEl) return;
+
+    if(remaining === 0){
+      timerEl.className = 'scd-timer available';
+      timerEl.textContent = 'Available';
+      if(startBtn) startBtn.textContent = '▶ Hunt';
+      clearInterval(natCdIvs[key]); delete natCdIvs[key];
+      natCdState[key] = null;
+      saveNatCooldowns();
+      playAlarm();
+      showToast(`✓ ${SPECIES_GROUPS.find(s=>s.key===key)?.label} cooldown complete!`, 4000);
+      return;
+    }
+
+    // Format as HH:MM:SS
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    timerEl.className = 'scd-timer' + (remaining <= 60 ? ' urgent' : '');
+    if(startBtn) startBtn.textContent = '⏳';
+
+    // 1-min alarm
+    if(remaining <= 60 && !natCdAlarmFired[key]){
+      natCdAlarmFired[key] = true;
+      playAlarm();
+      showToast(`⚠️ ${SPECIES_GROUPS.find(s=>s.key===key)?.label} cooldown ending in under 1 minute!`, 4000);
+    }
+  }
+
+  function resetSpeciesTimer(key){
+    clearInterval(natCdIvs[key]); delete natCdIvs[key];
+    natCdState[key] = null;
+    natCdAlarmFired[key] = false;
+    saveNatCooldowns();
+    const timerEl  = document.getElementById('scd-t-' + key);
+    const resetBtn = document.getElementById('scd-reset-' + key);
+    const startBtn = document.getElementById('scd-start-' + key);
+    if(timerEl){ timerEl.className = 'scd-timer available'; timerEl.textContent = 'Available'; }
+    if(resetBtn) resetBtn.disabled = true;
+    if(startBtn) startBtn.textContent = '▶ Hunt';
+  }
 
   let natState = {}; // {animal_id: [bool×7]}
 
@@ -2694,11 +2925,13 @@
     await loadCollector();
     await loadTrader();
     await loadNaturalist();
+    await loadNatCooldowns();
     await loadMoonshiner();
     await loadBounty();
     renderCollector();
     renderTrader();
     renderNaturalist();
+    renderNatCooldowns();
     renderMoonshiner();
     renderBounty();
     tickCountdowns();
