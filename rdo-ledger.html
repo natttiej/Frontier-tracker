@@ -1048,6 +1048,9 @@
         </div>
       </div>
       <div class="t-bar-track"><div class="t-bar-fill" id="t2-fill" style="width:0%"></div></div>
+      <div class="alert-box alert-delivery hidden" id="t2-paused-note" style="margin-bottom:8px;">
+        ⏸ <strong>Paused during resupply.</strong> Cripps resumes automatically when supplies arrive.
+      </div>
       <div class="alert-box hidden" id="t2-alarm">⚠️ <strong>Batch almost done — 1 minute left!</strong></div>
       <div class="alert-box alert-done hidden" id="t2-done">✓ <strong>Batch complete!</strong> 25 goods produced. Start the next batch.</div>
     </div>
@@ -1066,6 +1069,9 @@
       </div>
       <div class="t-bar-track">
         <div class="t-bar-fill t-bar-wagon" id="t3-fill" style="width:0%"></div>
+      </div>
+      <div class="alert-box alert-delivery hidden" id="t3-paused-note" style="margin-bottom:8px;">
+        ⏸ <strong>Paused during resupply.</strong> Wagon timer resumes automatically when supplies arrive.
       </div>
       <div class="goods-display" style="margin-top:10px;">
         <div class="goods-row">
@@ -1150,6 +1156,7 @@
           ⚠️ <strong>Moonshine almost ready — 1 minute left!</strong> Get ready to collect your batch.
         </div>
         <div class="run-actions" style="margin-top:10px;">
+          <button class="btn" id="moon-pause-btn">⏸ Pause</button>
           <button class="btn ghost" id="moon-reset-btn">✕ Cancel batch</button>
         </div>
       </div>
@@ -1304,7 +1311,7 @@
   const MAX_QTY = 10;
 
   let collectorState = {};
-  let traderState = { t1:null, t2:null, t3:null, t3Paused:null };
+  let traderState = { t1:null, t2:null, t3:null, t2Paused:null, t3Paused:null };
 
   function defaultCollectorState(){
     const s = {};
@@ -1630,7 +1637,14 @@
         }
       }
     });
-    // Restore paused state for wagon
+    // Restore paused-by-resupply notes
+    if(traderState.t2Paused !== null && traderState.t2Paused !== undefined && !traderState.t2){
+      const rem = Math.max(0, T2_SECS - traderState.t2Paused);
+      document.getElementById('t2-digits').textContent = fmtMS(rem);
+      document.getElementById('t2-fill').style.width = Math.min(100, traderState.t2Paused/T2_SECS*100)+'%';
+      document.getElementById('t2-paused-note').classList.remove('hidden');
+    }
+    // Restore wagon paused state
     if(traderState.t3Paused !== null && traderState.t3Paused !== undefined && !traderState.t3){
       const dur = T3_SECS;
       const rem = Math.max(0, dur - traderState.t3Paused);
@@ -1641,7 +1655,10 @@
       document.getElementById('t3-goods').innerHTML = goods + ' <span class="goods-of">/ 100</span>';
       document.getElementById('t3-start').style.display = 'none';
       document.getElementById('t3-pause').style.display = '';
-      document.getElementById('t3-pause').textContent = '▶ Resume';
+      // Check if paused by resupply or manually
+      const pauseByResupply = traderState.t1 !== null;
+      document.getElementById('t3-pause').textContent = pauseByResupply ? '⏸ Paused' : '▶ Resume';
+      if(pauseByResupply) document.getElementById('t3-paused-note').classList.remove('hidden');
     }
   }
 
@@ -1683,6 +1700,28 @@
       clearInterval(T_IVS[id]); T_IVS[id] = null;
       document.getElementById(id+'-done').classList.remove('hidden');
       if(id === 't3') playAlarm();
+
+      // When resupply (t1) completes, resume t2 and t3
+      if(id === 't1'){
+        document.getElementById('t2-paused-note').classList.add('hidden');
+        document.getElementById('t3-paused-note').classList.add('hidden');
+        if(traderState.t2Paused !== null && traderState.t2Paused !== undefined){
+          traderState.t2 = Date.now() - traderState.t2Paused * 1000;
+          traderState.t2Paused = null;
+          T_ALARM_FIRED.t2 = traderState.t2Paused <= 60; // re-check alarm state
+          saveTrader();
+          startTimer('t2');
+        }
+        if(traderState.t3Paused !== null && traderState.t3Paused !== undefined && !traderState.t3){
+          traderState.t3 = Date.now() - traderState.t3Paused * 1000;
+          traderState.t3Paused = null;
+          T_ALARM_FIRED.t3 = false;
+          saveTrader();
+          startTimer('t3');
+          const pauseBtn = document.getElementById('t3-pause');
+          if(pauseBtn) pauseBtn.textContent = '⏸ Pause';
+        }
+      }
     }
   }
 
@@ -1709,6 +1748,24 @@
       traderState[id] = Date.now();
       if(id === 't3') traderState.t3Paused = null;
       T_ALARM_FIRED[id] = false;
+
+      // When resupply (t1) starts, pause Cripps batch (t2) and wagon (t3) for 10 min
+      if(id === 't1'){
+        if(traderState.t2){
+          traderState.t2Paused = Math.floor((Date.now() - traderState.t2) / 1000);
+          traderState.t2 = null;
+          clearInterval(T_IVS.t2); T_IVS.t2 = null;
+          document.getElementById('t2-paused-note').classList.remove('hidden');
+        }
+        if(traderState.t3 && !traderState.t3Paused){
+          traderState.t3Paused = Math.floor((Date.now() - traderState.t3) / 1000);
+          traderState.t3 = null;
+          clearInterval(T_IVS.t3); T_IVS.t3 = null;
+          document.getElementById('t3-paused-note').classList.remove('hidden');
+          document.getElementById('t3-pause').textContent = '▶ Resume';
+        }
+      }
+
       saveTrader();
       startTimer(id);
       if(id === 't3'){
@@ -1716,11 +1773,18 @@
         document.getElementById('t3-pause').style.display = '';
       }
     });
+
     document.getElementById(id+'-reset').addEventListener('click', () => {
       resetTimer(id);
+      if(id === 't2'){
+        traderState.t2Paused = null;
+        document.getElementById('t2-paused-note').classList.add('hidden');
+        saveTrader();
+      }
       if(id === 't3'){
         document.getElementById('t3-start').style.display = '';
         document.getElementById('t3-pause').style.display = 'none';
+        document.getElementById('t3-paused-note').classList.add('hidden');
       }
     });
   });
@@ -2121,7 +2185,18 @@
     // Restore timer if one was running
     if(moonState.run) {
       showMoonActive();
-      startMoonInterval();
+      const r = moonState.run;
+      if(r.pausedSecs !== null && r.pausedSecs !== undefined){
+        // Restore paused display
+        const times = r.rank15 ? BREW_TIMES.rank15 : BREW_TIMES.default;
+        const totalSecs = times[r.strength];
+        const rem = Math.max(0, totalSecs - r.pausedSecs);
+        document.getElementById('moon-cd').textContent = fmtHMS(rem);
+        document.getElementById('moon-fill').style.width = Math.min(100, r.pausedSecs/totalSecs*100)+'%';
+        document.getElementById('moon-pause-btn').textContent = '▶ Resume';
+      } else {
+        startMoonInterval();
+      }
     }
 
     // Strength segment
@@ -2134,6 +2209,25 @@
     });
     document.getElementById('moon-rank15').addEventListener('change', updateBrewPreview);
     document.getElementById('moon-start-btn').addEventListener('click', startBrew);
+    document.getElementById('moon-pause-btn').addEventListener('click', () => {
+      const r = moonState.run;
+      if(!r) return;
+      const btn = document.getElementById('moon-pause-btn');
+      if(r.pausedSecs !== null && r.pausedSecs !== undefined){
+        // Resume
+        r.startEpoch = Date.now() - r.pausedSecs * 1000;
+        r.pausedSecs = null;
+        saveMoonshiner();
+        startMoonInterval();
+        btn.textContent = '⏸ Pause';
+      } else {
+        // Pause
+        r.pausedSecs = Math.floor((Date.now() - r.startEpoch) / 1000);
+        clearInterval(moonInterval); moonInterval = null;
+        saveMoonshiner();
+        btn.textContent = '▶ Resume';
+      }
+    });
     document.getElementById('moon-reset-btn').addEventListener('click', cancelBrew);
   }
 
@@ -2155,7 +2249,7 @@
   function startBrew(){
     const strength = getSelectedStrength();
     const rank15 = document.getElementById('moon-rank15').checked;
-    moonState.run = { startEpoch: Date.now(), strength, rank15 };
+    moonState.run = { startEpoch: Date.now(), strength, rank15, pausedSecs: null };
     moonAlarmFired = false;
     saveMoonshiner();
     showMoonActive();
@@ -2191,7 +2285,7 @@
 
   function tickMoon(){
     const r = moonState.run;
-    if(!r) return;
+    if(!r || (r.pausedSecs !== null && r.pausedSecs !== undefined)) return;
     const times = r.rank15 ? BREW_TIMES.rank15 : BREW_TIMES.default;
     const totalSecs = times[r.strength];
     const elapsed = Math.floor((Date.now() - r.startEpoch) / 1000);
